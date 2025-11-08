@@ -1,0 +1,89 @@
+\documentclass[11pt,oneside]{book}
+
+% ====================================================
+% Bootstrap: resolve repository-relative import roots
+% ----------------------------------------------------
+% The guide can be compiled either from this directory
+% or from the repository root. Detect both cases and
+% construct helper macros that mirror a tiny "module"
+% system for the TeX library and homework content.
+% ====================================================
+
+\newcommand{\TexRoot}{}
+\IfFileExists{../../../tex/core/colors.tex}{%
+  \renewcommand{\TexRoot}{../../../tex/}%
+}{%
+  \IfFileExists{../../tex/core/colors.tex}{%
+    \renewcommand{\TexRoot}{../../tex/}%
+  }{%
+    \IfFileExists{../tex/core/colors.tex}{%
+      \renewcommand{\TexRoot}{../tex/}%
+    }{%
+      \PackageError{main}{Cannot locate tex/ directory}{Ensure the repository layout matches the documentation.}%
+    }%
+  }%
+}
+
+\newcommand{\HomeworkRoot}{}\newcommand{\HomeworkRootProbe}{}
+\IfFileExists{../../homework/homework_template.tex}{%
+  \renewcommand{\HomeworkRoot}{../../homework/}%
+}{}
+\IfFileExists{../homework/homework_template.tex}{%
+  \renewcommand{\HomeworkRoot}{../homework/}%
+}{}
+\IfFileExists{homework/homework_template.tex}{%
+  \renewcommand{\HomeworkRoot}{homework/}%
+}{}
+\ifx\HomeworkRoot\HomeworkRootProbe
+  \PackageError{main}{Cannot locate homework/ directory}{Ensure the repository layout matches the documentation.}%
+\fi
+
+\newcommand{\TexInput}[1]{\input{\TexRoot#1}}
+\newcommand{\HomeworkPath}[1]{\HomeworkRoot#1}
+\newcommand{\ReportsRoot}{}\newcommand{\ReportsRootProbe}{}
+\IfFileExists{../../reports/Master_Lab_Report_Template.tex}{%
+  \renewcommand{\ReportsRoot}{../../reports/}%
+}{}
+\IfFileExists{../reports/Master_Lab_Report_Template.tex}{%
+  \renewcommand{\ReportsRoot}{../reports/}%
+}{}
+\IfFileExists{reports/Master_Lab_Report_Template.tex}{%
+  \renewcommand{\ReportsRoot}{reports/}%
+}{}
+\ifx\ReportsRoot\ReportsRootProbe
+  \PackageError{main}{Cannot locate reports/ directory}{Ensure the repository layout matches the documentation.}%
+\fi
+\newcommand{\ReportsPath}[1]{\ReportsRoot#1}
+\newcommand{\ReportsInput}[1]{\input{\ReportsRoot#1}}
+
+\TexInput{core/colors}
+\TexInput{core/base}
+\TexInput{styles/notes}
+\TexInput{modules/notes-embed}
+\TexInput{modules/homework-embed}
+\TexInput{modules/report-embed}
+
+\begin{document}
+
+\frontmatter
+\input{chapters/table-of-contents}
+
+\StartMainMatter
+\input{chapters/chapter_1}
+\input{chapters/chapter_2}
+\input{chapters/chapter_3}
+
+\newlength{\OriginalHeadWidth}
+\setlength{\OriginalHeadWidth}{\headwidth}
+\appendix
+\input{appendices/appA-homework}
+\input{appendices/appB-discussion}
+\input{appendices/appC-lecture}
+\input{appendices/appD-reports}
+
+\backmatter
+% \bibliographystyle{plainnat}
+% \bibliography{bib/references}
+
+\end{document}
+ 

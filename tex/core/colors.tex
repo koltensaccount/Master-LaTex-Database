@@ -1,0 +1,56 @@
+% ====================================================
+% CORE: Color Palette Configuration
+% ----------------------------------------------------
+% - Define shared colors once for the entire project.
+% - Override defaults by redefining \MathColor<Name>Model /
+%   \MathColor<Name>Spec *before* this file is loaded.
+% - Override on a per-document basis after loading via
+%   \MathColorOverride{Name}{model}{spec}.
+% ====================================================
+
+% --- Default color specifications (override-friendly) ---
+\usepackage[dvipsnames]{xcolor}
+
+\providecommand{\MathColorPrimaryModel}{rgb}
+\providecommand{\MathColorPrimarySpec}{0.18,0.24,0.50}
+
+\providecommand{\MathColorAccentModel}{rgb}
+\providecommand{\MathColorAccentSpec}{0.96,0.97,0.99}
+
+\providecommand{\MathColorRuleGrayModel}{gray}
+\providecommand{\MathColorRuleGraySpec}{0.80}
+
+\providecommand{\MathColorHighlightModel}{rgb}
+\providecommand{\MathColorHighlightSpec}{0.80,0.40,0.20}
+
+\providecommand{\MathColorLinkModel}{rgb}
+\providecommand{\MathColorLinkSpec}{0.18,0.24,0.50}
+
+% --- Internal helper: define a named color from stored specs ---
+\newcommand{\MathColorDefine}[1]{%
+  \definecolor{#1}{\csname MathColor#1Model\endcsname}{\csname MathColor#1Spec\endcsname}%
+}
+
+\MathColorDefine{Primary}
+\MathColorDefine{Accent}
+\MathColorDefine{RuleGray}
+\MathColorDefine{Highlight}
+\MathColorDefine{Link}
+
+% --- Public helper: override a single palette entry on demand ---
+\newcommand{\MathColorOverride}[3]{%
+  \expandafter\def\csname MathColor#1Model\endcsname{#2}%
+  \expandafter\def\csname MathColor#1Spec\endcsname{#3}%
+  \MathColorDefine{#1}%
+}
+
+% --- Hyperref defaults share the palette; adjust per document as desired ---
+\AtBeginDocument{%
+  \hypersetup{%
+    colorlinks=true,
+    linkcolor=Primary,
+    urlcolor=Primary,
+    citecolor=Primary,
+    pdfborder={0 0 0}
+  }%
+}

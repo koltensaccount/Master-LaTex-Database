@@ -1,0 +1,113 @@
+\ChapterHeading{1}{Repository Layout and Build Entry Points }
+\label{ch:system-overview}
+
+\SectionBar{1.1}{Top-Level Directory Map}
+\label{sec:top-level-layout}
+
+The project root is intentionally shallow so a new contributor can discover the
+build targets without digging through source first. Each entry below lists the
+exact reason the directory exists.
+
+\begin{description}[leftmargin=2.6em,labelwidth=2.4em]
+  \item[\texttt{README.md}] Human-facing overview. Mirrors the structure in this
+    guide so GitHub visitors immediately understand how to get started.
+  \item[\texttt{.gitignore}] Keeps generated LaTeX artefacts out of version control.
+    Every pattern is enumerated in Section~\ref{sec:output-hygiene}.
+  \item[\texttt{docs/}] Markdown quick-start and architecture notes for readers
+    who prefer plain text over the LaTeX guide. These files echo the content of
+    Chapter~\ref{ch:system-overview} and Chapter~\ref{ch:authoring-workflow}.
+  \item[\texttt{projects/}] All compilable deliverables.
+    \begin{description}[leftmargin=2.8em,labelwidth=2.6em]
+      \item[\texttt{textbook/}] The documentation-as-book project.
+        \InlineCode{src/} hosts the LaTeX sources. Passing
+        \InlineCode{-outdir=../output} keeps the book's artefacts in a sibling
+        directory, mirroring the historic layout.
+      \item[\texttt{homework/}] Content shared between the appendices and the
+        standalone assignments. Each \InlineCode{homeworkXX.tex} file is
+        self-contained but detects when it is embedded inside the textbook.
+    \end{description}
+  \item[\texttt{tex/}] The reusable TeX library, organised as modules:
+    \InlineCode{core/} (packages + helpers), \InlineCode{styles/} (visual
+    identity), and \InlineCode{modules/} (small shims such as homework embedding).
+\end{description}
+
+\SectionBar{1.2}{Textbook Build Flow}
+\label{sec:textbook-pipeline}
+
+The documentation book compiles through \texttt{projects/textbook/src/main.tex}.
+That file performs the following steps every time XeLaTeX runs:
+\begin{enumerate}[leftmargin=2em]
+  \item \textbf{Resolve repository-relative paths.} Lines 11--35 compute the
+        value of \InlineMacro{\TexRoot} and \InlineMacro{\HomeworkRoot} so the
+        build works whether you call \InlineCode{latexmk main.tex} from inside
+        \InlineCode{src/} or from the repository root.
+  \item \textbf{Load the TeX library.} The helper macro \InlineMacro{\TexInput}
+        wraps every include so the exact module path stays declarative:
+        \InlineCode{core/colors}, \InlineCode{core/base},
+        \InlineCode{styles/notes}, and finally the homework embedding shim from
+        \InlineCode{modules/homework-embed}. Section~\ref{sec:tex-lib} gives the
+        rationale for each module.
+  \item \textbf{Render the documentation chapters.} The front matter styles and
+        emits the live table of contents via
+        \InlineCode{chapters/table-of-contents.tex} before inputting the curated
+        chapters that form this tutorial.
+  \item \textbf{Switch into appendix mode.} The build captures the default
+        header width, swaps to homework geometry, emits the appendix chapter,
+        streams in every embedded assignment, and then restores the book layout.
+\end{enumerate}
+
+Because every content include uses \InlineMacro{\TexInput} or
+\InlineMacro{\HomeworkIncludeInNotes}, there is no hidden state—each line points
+directly at its dependency. The only code outside the loop is the geometry swap
+that protects the textbook layout from homework overrides.
+
+\SectionBar{1.3}{Homework Projects}
+\label{sec:homework-workflows}
+
+Homework material now uses a single-source pattern: each file inside
+\InlineCode{projects/homework/} begins with
+\InlineCode{\textbackslash input\{../../tex/system/document-homework.tex\}}.
+That wrapper loads the shared library, exposes
+\InlineCode{\HomeworkDocumentBegin/\HomeworkDocumentEnd}, and
+becomes a no-op when the textbook imports the same source via
+\InlineCode{\HomeworkIncludeInNotes}. You edit every problem once and choose
+whether to emit a standalone PDF or append it to the book simply by toggling
+the entry point. Discussion, lecture, and lab-report capture reuse the same
+philosophy via \InlineCode{tex/system/document-notes.tex} and
+\InlineCode{tex/system/document-report.tex}.
+
+To compile Homework~5 on its own:
+\begin{CodeBlock}
+\detokenize{cd projects/homework}
+\detokenize{latexmk -xelatex -interaction=nonstopmode -halt-on-error -file-line-error homework05.tex}
+\end{CodeBlock}
+The wrapper resolves \InlineCode{\TexRoot} identically to the textbook, so
+styling stays in sync across both targets and metadata helpers only live in one
+place. Running latexmk from any project folder automatically mirrors the source
+path by creating a sibling directory named after the `.tex` file (e.g.,
+\InlineCode{projects/homework/homework05/homework05.*}), leaving the
+\InlineCode{projects/} tree tidy.
+
+\SectionBar{1.4}{Output Hygiene and Path Helpers}
+\label{sec:output-hygiene}
+
+Two small but important details keep the repository approachable:
+\begin{enumerate}[leftmargin=2em]
+  \item \textbf{Output isolation.} Standalone projects keep artefacts inside a
+        folder named after the `.tex` file in the same directory (while the
+        textbook build can optionally target \InlineCode{../output/}). Nothing
+        under those folders is committed—contributors rebuild on demand instead
+        of trusting stale binaries.
+  \item \textbf{Path bootstrap.} The macros defined in
+        \texttt{projects/textbook/src/main.tex} and
+        \texttt{tex/system/document-*.tex} (homework, notes, reports)
+        resolve the repository layout dynamically. They all expose the same
+        helper:
+\begin{CodeBlock}
+\detokenize{\newcommand{\TexInput}[1]{\input{\TexRoot#1}}}
+\end{CodeBlock}
+        Any future document can reuse that pattern to opt into the shared TeX
+        library without guessing relative paths. If the layout ever changes,
+        update the detection logic in one place and the entire toolchain keeps
+        working.
+\end{enumerate}

@@ -1,0 +1,212 @@
+% ====================================================
+% CORE: Shared Packages & Macros
+% ----------------------------------------------------
+% These resources are used by both the textbook-style notes
+% and the printable homework documents.
+% ====================================================
+
+% --- CORE: Foundational packages ---
+\usepackage{amsmath,amssymb,amsthm,amsfonts,amscd}
+\usepackage{mathtools}
+\usepackage{enumitem}
+\usepackage{needspace}
+\usepackage{xstring}
+\usepackage{xparse}
+\usepackage{float}
+\usepackage{cancel}
+\usepackage[superscript]{cite}
+\usepackage{changepage}
+\usepackage{soul}
+\usepackage{tocloft}
+\usepackage{hyperref}
+\usepackage[capitalise,nameinlink]{cleveref}
+
+\makeatletter
+\g@addto@macro\UrlBreaks{%
+  \do\/\do\\\do\_\do\-\do\{\do\}%
+  \do\.\do:\do\=\do+\do\#\do\&\do\,\do\?%
+}
+\makeatother
+
+\newcommand{\MathNotesSlugSet}[2]{%
+  \begingroup
+    \edef\MathNotesSlugTmp{\detokenize{#2}}%
+    \lowercase{\edef\MathNotesSlugTmp{\MathNotesSlugTmp}}%
+    \StrSubstitute{\MathNotesSlugTmp}{ }{-}[\MathNotesSlugTmp]%
+    \StrSubstitute{\MathNotesSlugTmp}{~}{-}[\MathNotesSlugTmp]%
+    \StrSubstitute{\MathNotesSlugTmp}{:}{-}[\MathNotesSlugTmp]%
+    \StrSubstitute{\MathNotesSlugTmp}{/}{-}[\MathNotesSlugTmp]%
+    \StrSubstitute{\MathNotesSlugTmp}{(}{}[\MathNotesSlugTmp]%
+    \StrSubstitute{\MathNotesSlugTmp}{)}{}[\MathNotesSlugTmp]%
+    \StrSubstitute{\MathNotesSlugTmp}{,}{}[\MathNotesSlugTmp]%
+    \StrSubstitute{\MathNotesSlugTmp}{.}{}[\MathNotesSlugTmp]%
+    \StrSubstitute{\MathNotesSlugTmp}{--}{-}[\MathNotesSlugTmp]%
+    \StrSubstitute{\MathNotesSlugTmp}{--}{-}[\MathNotesSlugTmp]%
+    \StrSubstitute{\MathNotesSlugTmp}{--}{-}[\MathNotesSlugTmp]%
+    \xdef#1{\MathNotesSlugTmp}%
+  \endgroup
+}
+
+% --- CORE: Graphics and plotting ---
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{circuitikz}
+\usetikzlibrary{calc,positioning,shapes.geometric}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepgfplotslibrary{groupplots}
+
+% --- CORE: Box/enclosure support ---
+\usepackage[most]{tcolorbox}
+
+% --- CORE: Math shorthands ---
+\newcommand{\vect}[1]{\mathbf{#1}}
+\newcommand{\mat}[1]{\begin{bmatrix}#1\end{bmatrix}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\rank}{\operatorname{rank}}
+\newcommand{\nulls}{\operatorname{null}}
+\newcommand{\Span}{\operatorname{span}}
+\newcommand{\eig}{\operatorname{eig}}
+\newcommand{\diff}{\mathrm{d}}
+
+% --- CORE: Structural theorem environments ---
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{example}{Example}[section]
+
+% --- CORE: Homework problem + solution boxes ---
+\newcounter{hwproblem}
+\newcounter{discproblem}
+
+\crefname{hwproblem}{Problem}{Problems}
+\Crefname{hwproblem}{Problem}{Problems}
+\crefname{discproblem}{Problem}{Problems}
+\Crefname{discproblem}{Problem}{Problems}
+
+\newcommand{\MathIfBlankTF}[3]{%
+  \if\relax\detokenize{#1}\relax
+    #2%
+  \else
+    #3%
+  \fi
+}
+
+\makeatletter
+\newcommand{\CurrentHomeworkSection}{}
+\NewDocumentCommand{\HomeworkSection}{m}{%
+  \section*{Section~#1}%
+  \def\CurrentHomeworkSection{#1}%
+}
+
+\NewDocumentEnvironment{hwproblem}{O{} m O{}}{%
+  \def\hwproblem@section{#1}%
+  \def\hwproblem@number{#2}%
+  \def\hwproblem@title{#3}%
+  \Needspace{6\baselineskip}%
+  \par\vspace{0.5em}%
+  \begin{samepage}%
+  \begin{adjustwidth}{2em}{0em}%
+  \refstepcounter{hwproblem}%
+  \edef\hwproblem@label{prob:hw-\hwproblem@section-\hwproblem@number}%
+  \edef\@currentlabel{HW~\hwproblem@section.\hwproblem@number}%
+  \MathIfBlankTF{#3}{%
+    \protected@edef\@currentlabelname{Problem~HW~\hwproblem@section.\hwproblem@number}%
+  }{%
+    \protected@edef\@currentlabelname{Problem~HW~\hwproblem@section.\hwproblem@number~(#3)}%
+  }%
+  \phantomsection
+  \label{\hwproblem@label}%
+  \MathIfBlankTF{#3}{%
+    \noindent\textbf{Problem\ \hwproblem@number}%
+  }{%
+    \noindent\textbf{Problem\ \hwproblem@number\ \textemdash\ #3}%
+  }%
+  \par\vspace{0.5em}%
+  \setlength{\parindent}{0pt}%
+}{%
+  \end{adjustwidth}%
+  \end{samepage}%
+  \vspace{1em}%
+}
+
+\NewDocumentEnvironment{discproblem}{O{} m O{}}{%
+  \def\discproblem@pack{#1}%
+  \def\discproblem@id{#2}%
+  \def\discproblem@topic{#3}%
+  \Needspace{6\baselineskip}%
+  \par\vspace{0.5em}%
+  \begin{samepage}%
+  \begin{adjustwidth}{2em}{0em}%
+  \refstepcounter{discproblem}%
+  \edef\discproblem@label{prob:disc-\discproblem@pack-\discproblem@id}%
+  \edef\@currentlabel{Disc~\discproblem@pack.\discproblem@id}%
+  \MathIfBlankTF{#3}{%
+    \protected@edef\@currentlabelname{Problem~Disc~\discproblem@pack.\discproblem@id}%
+  }{%
+    \protected@edef\@currentlabelname{Problem~Disc~\discproblem@pack.\discproblem@id~(#3)}%
+  }%
+  \phantomsection
+  \label{\discproblem@label}%
+  \noindent\textbf{Disc\ \discproblem@pack\ \textbullet{}\ Problem\ \discproblem@id}%
+  \MathIfBlankTF{#3}{}{%
+    \ \textemdash\ #3%
+  }%
+  \par\vspace{0.5em}%
+  \setlength{\parindent}{0pt}%
+}{%
+  \end{adjustwidth}%
+  \end{samepage}%
+  \vspace{1em}%
+}
+
+\newenvironment{solution}{%
+  \par\vspace{0.25em}\noindent\textbf{Solution. }\setlength{\parindent}{0pt}\ignorespaces
+}{\par\vspace{0.5em}}
+
+\newcommand{\probref}[1]{\cref{#1}}
+\newcommand{\Probref}[1]{\Cref{#1}}
+
+\NewDocumentCommand{\newhwprob}{m m O{}}{\begin{hwproblem}[#1]{#2}[#3]}
+\NewDocumentCommand{\newdiscprob}{m m O{}}{\begin{discproblem}[#1]{#2}[#3]}
+\NewDocumentEnvironment{autohwproblem}{m O{}}{%
+  \begin{hwproblem}[\CurrentHomeworkSection]{#1}[#2]
+}{%
+  \end{hwproblem}
+}
+\makeatother
+
+\newenvironment{textbookproblem}[1][]{
+  \Needspace{6\baselineskip}%
+  \par\vspace{0.5em}%
+  \begin{samepage}
+  \begin{adjustwidth}{2em}{0em}%
+  \noindent\textbf{#1}\par\vspace{0.5em}%
+  \setlength{\parindent}{0pt}%
+}{
+  \end{adjustwidth}
+  \end{samepage}
+  \vspace{1em}%
+}
+
+\newtcolorbox{solutionbox}{
+  enhanced,
+  breakable,
+  colback=white,
+  colframe=black!15,
+  borderline west={3pt}{0pt}{Highlight},
+  sharp corners,
+  boxrule=0pt,
+  left=10pt, right=10pt, top=6pt, bottom=8pt,
+  before skip=10pt, after skip=10pt,
+  title={},
+  fontupper=\normalsize,
+  before upper={%
+    \parindent=0pt\setlength{\emergencystretch}{2em}\setlength{\arraycolsep}{4pt}%
+    \textcolor{Primary}{\textbf{Solution}}\par\medskip
+  },
+}
+
+% --- CORE: Utility macros shared across styles ---
+\newcommand{\keyword}[1]{\textbf{#1}}
+\newcommand{\bluearrow}{\textcolor{Primary}{\large\(\blacktriangleright\)}\;}

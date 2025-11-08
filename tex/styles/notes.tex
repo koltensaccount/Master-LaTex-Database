@@ -1,0 +1,496 @@
+% ====================================================
+% NOTES STYLE: Layout & Typography for the Textbook Notes
+% ----------------------------------------------------
+% Loads XeLaTeX-specific tooling, margin figure helpers,
+% and decorative chapter/section elements.
+% ====================================================
+
+% --- NOTES: Page geometry & margin configuration ---
+\usepackage[
+  paperwidth=8.5in,
+  paperheight=11in,
+  twoside=false,
+  left=2.5in,
+  right=0.75in,
+  top=0.25in,
+  bottom=1in,
+  headheight=26pt,
+  includeheadfoot,
+  marginparwidth=1.6in,
+  marginparsep=15pt
+]{geometry}
+
+\usepackage{titlesec}
+\usepackage{marginnote}
+\usepackage{caption}
+\usepackage{lipsum}
+\usepackage{tocloft}
+\usepackage{tocloft}
+
+\makeatletter
+\@ifundefined{ifMathNotesEmbedded}{\newif\ifMathNotesEmbedded}{}
+\MathNotesEmbeddedfalse
+\makeatother
+
+% --- NOTES: Font configuration (XeLaTeX) ---
+\usepackage{fontspec}
+\newcommand{\NotesFontMono}{\ttfamily}
+\IfFontExistsTF{JetBrains Mono}{%
+  \newfontfamily\mathnotesmainfont{JetBrains Mono}
+  \renewcommand{\NotesFontMono}{\mathnotesmainfont}
+}{%
+  \typeout{[notes] Font 'JetBrains Mono' not found; using default monospaced font.}%
+}
+\IfFontExistsTF{Helvetica}{%
+  \newfontfamily\mathnotessansfont{Helvetica}
+}{%
+  \typeout{[notes] Font 'Helvetica' not found; using 'TeX Gyre Heros'.}%
+  \newfontfamily\mathnotessansfont{TeX Gyre Heros}
+}
+\IfFontExistsTF{Times New Roman}{%
+  \newfontfamily\mathnotesseriffont{Times New Roman}
+}{%
+  \typeout{[notes] Font 'Times New Roman' not found; using 'TeX Gyre Termes'.}%
+  \newfontfamily\mathnotesseriffont{TeX Gyre Termes}
+}
+
+\newcommand{\NotesFontBody}{\mathnotesseriffont}
+\newcommand{\NotesFontHeader}{\mathnotessansfont\bfseries}
+\newcommand{\NotesFontTitle}{\mathnotessansfont\bfseries\LARGE}
+\newcommand{\NotesFontCaption}{\mathnotesseriffont\small}
+\newcommand{\NotesFontEmph}{\mathnotesseriffont\itshape}
+
+\AtBeginDocument{%
+  \NotesFontBody
+  \reversemarginpar
+}
+
+\makeatletter
+\@ifundefined{cftbeforechapskip}{}{%
+  \setlength{\cftbeforechapskip}{0.75em}
+  \renewcommand{\cftchapfont}{\NotesFontHeader}
+  \renewcommand{\cftchappagefont}{\NotesFontHeader}
+  \renewcommand{\cftchapleader}{\hfill}
+  \renewcommand{\cftchapdotsep}{\cftnodots}
+}
+\@ifundefined{cftbeforesecskip}{}{%
+  \setlength{\cftbeforesecskip}{0pt}
+}
+\@ifundefined{cftsecfont}{}{%
+  \renewcommand{\cftsecfont}{\NotesFontBody}
+}
+\@ifundefined{cftsecpagefont}{}{%
+  \renewcommand{\cftsecpagefont}{\NotesFontBody}
+}
+\newcommand{\NotesTableOfContents}{%
+  \begingroup
+    \let\contentsname\relax
+    \@starttoc{toc}%
+  \endgroup
+}
+\protected\def\NotesChapterTOCEntry#1#2{%
+  \if@mainmatter
+    \addcontentsline{toc}{chapter}{Chapter~#1\ \textemdash\ #2}%
+  \else
+    \addcontentsline{toc}{chapter}{Appendix~#1\ \textemdash\ #2}%
+  \fi
+}
+\makeatother
+
+% --- NOTES: Header & footer styling ---
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead{}%
+\fancyhead[L]{%
+  \ifodd\value{page}
+    \NotesFontHeader\MakeUppercase{\leftmark}%
+  \else
+    \thepage
+  \fi
+}
+\fancyhead[R]{%
+  \ifodd\value{page}
+    \thepage
+  \else
+    \NotesFontHeader\MakeUppercase{\leftmark}%
+  \fi
+}
+\renewcommand{\headrulewidth}{0.4pt}
+\setlength{\headheight}{26pt}
+\fancypagestyle{plain}{\pagestyle{fancy}}
+
+% --- NOTES: Equation and custom counter alignment with chapters ---
+\numberwithin{equation}{chapter}
+\newcounter{textexample}[chapter]
+\renewcommand{\thetextexample}{\thechapter.\arabic{textexample}}
+\newcounter{notestheorem}[chapter]
+\renewcommand{\thenotestheorem}{\thechapter.\arabic{notestheorem}}
+\newcounter{notesdefinition}[chapter]
+\renewcommand{\thenotesdefinition}{\thechapter.\arabic{notesdefinition}}
+\newcounter{marginfigure}[chapter]
+\renewcommand{\themarginfigure}{\thechapter.\arabic{marginfigure}}
+\crefname{notestheorem}{Theorem}{Theorems}
+\Crefname{notestheorem}{Theorem}{Theorems}
+\crefname{notesdefinition}{Definition}{Definitions}
+\Crefname{notesdefinition}{Definition}{Definitions}
+
+% --- NOTES: Example block with chapter-aware numbering ---
+\newcommand{\solutiontag}{%
+  \tikz[baseline=(s.base)] \node[fill=Accent,draw=none,
+    text=Primary,font=\NotesFontHeader,rounded corners=2pt,
+    inner xsep=6pt,inner ysep=2pt] (s) {Solution};%
+}
+
+\newenvironment{textexample}[1]{%
+  \refstepcounter{textexample}%
+  \Needspace*{5\baselineskip}%
+  \vspace{0.6em}\noindent
+  \makebox[0pt][l]{\hspace*{-1.2in}%
+    \begin{tikzpicture}[baseline=(title.base)]
+      \def\BW{1in}\def\BH{0.72cm}%
+      \node[inner sep=0pt,minimum width=\BW,minimum height=\BH,
+            anchor=base west,fill=Highlight,rounded corners=2pt] (box) at (0,0) {};%
+      \node[font=\NotesFontHeader,text=white,anchor=center]
+        at (box.center){Example~\thetextexample};%
+      \coordinate (ruleStart) at (box.north west);%
+      \coordinate (ruleEnd) at ($(ruleStart)+(\textwidth+1.2in,0)$);%
+      \draw[RuleGray,line width=1pt](ruleStart)--(ruleEnd);%
+      \node[font=\NotesFontHeader\large,text=Primary,
+            anchor=base west,right=0.2in of box.east] (title) {#1};%
+    \end{tikzpicture}%
+  }%
+  \par\vspace{0.8em}\noindent
+}{\vspace{0.8em}}
+
+% --- NOTES: Decorative theorem/definition boxes ---
+\tcbset{
+  mathnotesbox/.style={
+    colback=Accent,
+    colframe=Accent,
+    fonttitle=\NotesFontHeader\color{Primary},
+    boxrule=0pt,
+    arc=2pt,
+    left=10pt,right=10pt,top=6pt,bottom=6pt,
+    enhanced,
+  }
+}
+
+\newenvironment{theoremBox}[1]{%
+  \refstepcounter{notestheorem}%
+  \begin{tcolorbox}[mathnotesbox,
+    title={THEOREM~\thenotestheorem\hspace{0.5em}\normalfont\itshape#1}]%
+}{\end{tcolorbox}}
+
+\newenvironment{definitionBox}[1]{%
+  \refstepcounter{notesdefinition}%
+  \begin{tcolorbox}[mathnotesbox,
+    title={DEFINITION~\thenotesdefinition\hspace{0.5em}\normalfont\itshape#1}]%
+}{\end{tcolorbox}}
+
+% --- Intake-specific grayscale blocks (lectures/discussions) ---
+\newcounter{intakedefinition}
+\newcounter{intaketheorem}
+\newcounter{intakeexample}
+\newcounter{intakesection}
+\crefname{intakedefinition}{Definition}{Definitions}
+\Crefname{intakedefinition}{Definition}{Definitions}
+\crefname{intaketheorem}{Theorem}{Theorems}
+\Crefname{intaketheorem}{Theorem}{Theorems}
+\crefname{intakeexample}{Example}{Examples}
+\Crefname{intakeexample}{Example}{Examples}
+\crefname{intakesection}{Section}{Sections}
+\Crefname{intakesection}{Section}{Sections}
+
+\makeatletter
+\newcommand{\mathnotes@resetintakecounters}{%
+  \setcounter{intakedefinition}{0}%
+  \setcounter{intaketheorem}{0}%
+  \setcounter{intakeexample}{0}%
+  \setcounter{intakesection}{0}%
+}
+\makeatother
+
+\newcommand{\MathNotesIntakeSubtitle}[1]{%
+  \if\relax\detokenize{#1}\relax
+    \relax
+  \else
+    \hspace{0.5em}\normalfont\itshape#1%
+  \fi
+}
+
+\newcommand{\MathNotesIntakeExampleTitle}[1]{%
+  \if\relax\detokenize{#1}\relax
+    \strut
+  \else
+    #1%
+  \fi
+}
+
+\tcbset{
+  intakebox/.style={
+    colback=black!4,
+    colframe=black!40,
+    fonttitle=\NotesFontHeader\color{black},
+    boxrule=0pt,
+    arc=2pt,
+    left=10pt,right=10pt,top=6pt,bottom=6pt,
+    enhanced,
+  }
+}
+
+\NewDocumentEnvironment{IntakeDefinition}{O{}}{%
+  \refstepcounter{intakedefinition}%
+  \begin{tcolorbox}[intakebox,
+    title={DEFINITION~\theintakedefinition\MathNotesIntakeSubtitle{#1}}]%
+    \NotesFontBody
+}{\end{tcolorbox}}
+
+\NewDocumentEnvironment{IntakeTheorem}{O{}}{%
+  \refstepcounter{intaketheorem}%
+  \begin{tcolorbox}[intakebox,
+    title={THEOREM~\theintaketheorem\MathNotesIntakeSubtitle{#1}}]%
+    \NotesFontBody
+}{\end{tcolorbox}}
+
+\NewDocumentEnvironment{IntakeExample}{O{}}{%
+  \refstepcounter{intakeexample}%
+  \Needspace*{5\baselineskip}%
+  \vspace{0.6em}\noindent
+  \makebox[0pt][l]{\hspace*{-1.2in}%
+    \begin{tikzpicture}[baseline=(title.base)]
+      \def\BW{1in}\def\BH{0.72cm}%
+      \node[inner sep=0pt,minimum width=\BW,minimum height=\BH,
+            anchor=base west,fill=black!45,rounded corners=2pt] (box) at (0,0) {};%
+      \node[font=\NotesFontHeader,text=white,anchor=center]
+        at (box.center){Example~\theintakeexample};%
+      \coordinate (ruleStart) at (box.north west);%
+      \coordinate (ruleEnd) at ($(ruleStart)+(\textwidth+1.2in,0)$);%
+      \draw[black!35,line width=1pt](ruleStart)--(ruleEnd);%
+      \node[font=\NotesFontHeader\large,text=black,
+            anchor=base west,right=0.2in of box.east] (title) {\MathNotesIntakeExampleTitle{#1}};%
+    \end{tikzpicture}%
+  }%
+  \par\vspace{0.8em}\noindent
+  \NotesFontBody
+}{\vspace{0.8em}}
+
+\NewDocumentEnvironment{LectureDefinition}{O{}}{\begin{IntakeDefinition}[#1]}{\end{IntakeDefinition}}
+\NewDocumentEnvironment{LectureTheorem}{O{}}{\begin{IntakeTheorem}[#1]}{\end{IntakeTheorem}}
+\NewDocumentEnvironment{LectureExample}{O{}}{\begin{IntakeExample}[#1]}{\end{IntakeExample}}
+\NewDocumentEnvironment{DiscussionDefinition}{O{}}{\begin{IntakeDefinition}[#1]}{\end{IntakeDefinition}}
+\NewDocumentEnvironment{DiscussionTheorem}{O{}}{\begin{IntakeTheorem}[#1]}{\end{IntakeTheorem}}
+\NewDocumentEnvironment{DiscussionExample}{O{}}{\begin{IntakeExample}[#1]}{\end{IntakeExample}}
+
+% --- NOTES: Margin figure helpers ---
+\newcommand{\MarginFigureAutoContent}[2]{%
+  \begin{minipage}{\marginparwidth}
+    \centering
+    #1\\[2pt]
+    {\NotesFontCaption\textbf{\color{Primary}FIGURE~\themarginfigure.} #2}%
+  \end{minipage}
+}
+\newcommand{\MarginFigureAuto}[3][0pt]{%
+  \refstepcounter{marginfigure}%
+  \vspace{#1}%
+  \marginnote{\MarginFigureAutoContent{#2}{#3}}%
+  \label{fig:\themarginfigure}%
+}
+
+% --- NOTES: Chapter/section heading macros ---
+\setcounter{chapter}{0}
+
+\newcommand{\NotesSlugSet}[2]{\MathNotesSlugSet{#1}{#2}}
+
+\makeatletter
+\newif\ifmathnotes@intakeopen
+\mathnotes@intakeopenfalse
+
+\newcommand{\mathnotes@closeintake}{%
+  \ifmathnotes@intakeopen
+    \end{itemize}%
+    \mathnotes@intakeopenfalse
+  \fi
+}
+
+\newcommand{\mathnotes@startintake}{%
+  \begin{itemize}[leftmargin=*,label=\textbullet,topsep=2pt,itemsep=2pt]
+  \mathnotes@intakeopentrue
+}
+
+\newcommand{\mathnotes@ensureintakeopen}{%
+  \ifmathnotes@intakeopen
+  \else
+    \mathnotes@startintake
+  \fi
+}
+
+\NewDocumentCommand{\MathNotesIntakePoint}{O{} m}{%
+  \mathnotes@ensureintakeopen
+  \item \MathIfBlankTF{#1}{#2}{\textbf{#1:}~#2}%
+}
+
+\NewDocumentCommand{\LecturePoint}{O{} m}{\MathNotesIntakePoint[#1]{#2}}
+\NewDocumentCommand{\DiscussionPoint}{O{} m}{\MathNotesIntakePoint[#1]{#2}}
+
+\NewDocumentCommand{\IntakeSection}{O{} m}{%
+  \mathnotes@closeintake
+  \refstepcounter{intakesection}%
+  \Needspace*{4\baselineskip}%
+  \vspace{0.4em}\noindent
+  {\NotesFontHeader\large #2}\par
+  \vspace{0em}\noindent
+  {\color{black!35}\rule{\textwidth}{0.6pt}}\par
+  \vspace{0.3em}\noindent
+  \phantomsection
+  \if\relax\detokenize{#1}\relax\else
+    \label{#1}%
+  \fi
+}
+
+\NewDocumentCommand{\LectureSection}{O{} m}{\IntakeSection[#1]{#2}}
+\NewDocumentCommand{\DiscussionSection}{O{} m}{\IntakeSection[#1]{#2}}
+
+\newcommand{\closenotes}{\mathnotes@closeintake}
+\newcommand{\opennotes}{\mathnotes@closeintake\mathnotes@startintake}
+
+\NewDocumentCommand{\newlecture}{m m}{%
+  \mathnotes@closeintake
+  \NotesSlugSet{\mathnotes@titleslug}{#1}%
+  \def\mathnotes@lectureheading{#2\ \textemdash\ #1}%
+  \ifMathNotesEmbedded
+    \section*{\mathnotes@lectureheading}%
+    \addcontentsline{toc}{section}{Lecture\ #2\ ---\ #1}%
+  \else
+    \section{\mathnotes@lectureheading}%
+  \fi
+  \markboth{\mathnotes@lectureheading}{\mathnotes@lectureheading}%
+  \phantomsection
+  \label{lec:#2-\mathnotes@titleslug}%
+  \mathnotes@resetintakecounters
+}
+
+\NewDocumentCommand{\newdiscussion}{m m m}{%
+  \mathnotes@closeintake
+  \NotesSlugSet{\mathnotes@packslug}{#1}%
+  \NotesSlugSet{\mathnotes@sheetslug}{#2}%
+  \def\mathnotes@discussionheading{Discussion\ #1\ ---\ #2\ (#3)}%
+  \ifMathNotesEmbedded
+    \section*{\mathnotes@discussionheading}%
+    \addcontentsline{toc}{section}{Discussion\ #1\ ---\ #2\ (#3)}%
+  \else
+    \section{\mathnotes@discussionheading}%
+  \fi
+  \markboth{\mathnotes@discussionheading}{\mathnotes@discussionheading}%
+  \phantomsection
+  \label{disc:\mathnotes@packslug-\mathnotes@sheetslug-#3}%
+  \mathnotes@resetintakecounters
+}
+
+\RenewDocumentCommand{\newhwprob}{m m O{}}{%
+  \mathnotes@closeintake
+  \begin{hwproblem}[#1]{#2}[#3]
+}
+
+\RenewDocumentCommand{\newdiscprob}{m m O{}}{%
+  \mathnotes@closeintake
+  \begin{discproblem}[#1]{#2}[#3]
+}
+\makeatother
+
+\newcommand{\ChapterHeading}[2]{%
+  \ifnum\value{chapter}>0
+    \clearpage
+  \fi
+  \refstepcounter{chapter}%
+  \setcounter{equation}{0}%
+  \setcounter{textexample}{0}%
+  \setcounter{notestheorem}{0}%
+  \setcounter{notesdefinition}{0}%
+  \setcounter{marginfigure}{0}%
+  \vspace*{1em}%
+  \begin{tikzpicture}[remember picture,overlay]
+    \fill[Accent] (current page.west|-{0,0}) rectangle ++(\paperwidth,1.1cm);
+  \end{tikzpicture}%
+  \vspace{0.4cm}%
+  \noindent
+  \begin{minipage}{\textwidth}
+    \raggedright
+    \begin{tikzpicture}[baseline=(chapnum.base)]
+      \node[fill=black,text=white,font=\NotesFontTitle,
+            inner xsep=10pt,inner ysep=6pt,anchor=base west] (chapnum) {CHAPTER~\thechapter};
+      \node[font=\NotesFontTitle,text=Primary,
+            anchor=base west,right=0.8em of chapnum.base east,
+            align=left,text width=\dimexpr\textwidth-4cm\relax] (title) {#2};
+    \end{tikzpicture}
+  \end{minipage}
+  \markboth{#2}{#2}%
+  \phantomsection
+  \NotesChapterTOCEntry{\thechapter}{#2}%
+  \vspace{0.4em}\par\noindent
+}
+
+\newcommand{\ContentsHeading}[2][]{%
+  \def\contentsheadingdisplay{#2}%
+  \def\contentsheadingmark{#2}%
+  \if\relax\detokenize{#1}\relax\else
+    \def\contentsheadingmark{#1}%
+  \fi
+  \vspace*{1em}%
+  \begin{tikzpicture}[remember picture,overlay]
+    \fill[Accent] (current page.west|-{0,0}) rectangle ++(\paperwidth,1.1cm);
+  \end{tikzpicture}%
+  \vspace{0.4cm}%
+  \noindent
+  \begin{minipage}{\textwidth}
+    \raggedright
+    \begin{tikzpicture}[baseline=(chapnum.base)]
+      \node[fill=black,text=white,font=\NotesFontTitle,
+            inner xsep=10pt,inner ysep=6pt,anchor=base west] (chapnum) {CONTENTS};
+      \node[font=\NotesFontTitle,text=Primary,
+            anchor=base west,right=0.8em of chapnum.base east,
+            align=left,text width=\dimexpr\textwidth-4cm\relax] (title) {\contentsheadingdisplay};
+    \end{tikzpicture}
+  \end{minipage}
+  \markboth{\contentsheadingmark}{\contentsheadingmark}%
+  \vspace{2em}\par\noindent
+}
+
+\newcommand{\StartMainMatter}{%
+  \clearpage
+  \mainmatter
+}
+
+\DeclareRobustCommand{\InlineMacro}[1]{%
+  \begingroup
+  \ttfamily\small\sloppy
+  \Urlmuskip=0mu plus 1mu\relax
+  \nolinkurl{\detokenize{#1}}%
+  \endgroup
+}
+\DeclareRobustCommand{\InlineCode}[1]{\InlineMacro{#1}}
+\newenvironment{CodeBlock}{%
+  \begin{adjustwidth}{0pt}{0pt}%
+  \ttfamily\small\obeyspaces\obeylines\sloppy
+  \setlength{\parindent}{0pt}%
+  \rightskip=0pt plus 2em\relax
+}{%
+  \end{adjustwidth}
+}
+
+\newcommand{\SectionBar}[2]{%
+  \Needspace*{4\baselineskip}%
+  \vspace{0.4em}%
+  \noindent
+  \begin{tikzpicture}[baseline=(num.base)]
+    \node[fill=black,text=white,font=\NotesFontHeader\large,
+          inner xsep=8pt,inner ysep=4pt,anchor=base west] (num) {#1};
+    \draw[RuleGray,line width=1pt]
+      (num.south west)--($(num.south west)+(\textwidth,0)$);
+    \node[font=\NotesFontHeader\large,text=Primary,
+          anchor=base west,right=0.7em of num.base east] (txt) {#2};
+  \end{tikzpicture}
+  \vspace{0.4em}\par\noindent
+  \phantomsection
+  \addcontentsline{toc}{section}{\protect\numberline{#1}#2}%
+}

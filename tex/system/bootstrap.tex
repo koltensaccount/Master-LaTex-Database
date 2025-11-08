@@ -1,0 +1,34 @@
+% ====================================================
+% System Bootstrap
+% ----------------------------------------------------
+% Centralizes repository-relative path helpers so every
+% document can share the same `tex/` library, project
+% directories, and convenience macros. Define \RepoRoot
+% (path from the current document to the repository
+% root, without a trailing slash) before loading this
+% file. When omitted, the bootstrap assumes `..`.
+% ====================================================
+
+\providecommand{\RepoRoot}{..}
+
+\newcommand{\RepoJoin}[1]{\RepoRoot/#1}
+\newcommand{\RepoInput}[1]{\input{\RepoJoin{#1}}}
+
+\edef\TexRoot{\RepoJoin{tex/}}
+\newcommand{\TexInput}[1]{\input{\TexRoot#1}}
+
+\edef\ProjectsRoot{\RepoJoin{projects/}}
+\edef\HomeworkRoot{\ProjectsRoot homework/}
+\edef\DiscussionRoot{\ProjectsRoot discussion/}
+\edef\LectureRoot{\ProjectsRoot lecture/}
+\edef\ReportsRoot{\ProjectsRoot reports/}
+
+\newcommand{\HomeworkPath}[1]{\HomeworkRoot#1}
+\newcommand{\DiscussionPath}[1]{\DiscussionRoot#1}
+\newcommand{\LecturePath}[1]{\LectureRoot#1}
+\newcommand{\ReportsPath}[1]{\ReportsRoot#1}
+
+\newcommand{\HomeworkInput}[1]{\input{\HomeworkPath{#1}}}
+\newcommand{\DiscussionInput}[1]{\input{\DiscussionPath{#1}}}
+\newcommand{\LectureInput}[1]{\input{\LecturePath{#1}}}
+\newcommand{\ReportsInput}[1]{\input{\ReportsPath{#1}}}

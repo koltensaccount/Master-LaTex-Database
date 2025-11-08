@@ -1,0 +1,40 @@
+% !TEX root = ./lecture-example.tex
+% !TEX program = latexmk
+\makeatletter
+\def\input@path{{./}{../}{../../}{../../../}{../../../../}}
+\makeatother
+% Example lecture capture demonstrating \newlecture intake.
+\def\MathNotesDocTitle{Lecture Notes Example}
+\def\MathNotesDocAuthor{MATH 2243}
+\def\MathNotesDocDate{2025-10-23}
+% Uncomment to mirror section titles in the header:
+% \def\MathNotesDocHeader{\MakeUppercase{\leftmark}}
+\input{tex/system/document-notes.tex}
+
+\newlecture{<topic here>}{<YYYY-MM-DD>}
+\LectureSection[sec:lecture-warmup]{Warm-up Sweep}
+\LecturePoint{Capture quick bullet points here.}
+\LecturePoint[Tag]{Use the optional argument to emphasize a lead word.}
+\LectureSection[sec:lecture-main]{Main Topic}
+\LecturePoint{Reference earlier sections inline --- see \cref{sec:lecture-warmup} for the baseline sweep.}
+\LecturePoint[Action]{Drop follow-up actions or TODOs that surface during the lecture.}
+\closenotes
+
+\begin{LectureDefinition}[Optional subtitle]\label{lec:def:intake}
+Drop a grayscale definition box here whenever you need lightweight structure in
+your intake notes.
+\end{LectureDefinition}
+
+\begin{LectureTheorem}[Optional subtitle]\label{lec:thm:intake}
+Use the theorem block for rules-of-thumb or ad-hoc proofs that are easier to
+keep near the raw lecture log.
+\end{LectureTheorem}
+
+\begin{LectureExample}[Optional subtitle]\label{lec:ex:intake}
+Keep scratch derivations or numeric sanity checks in this example box.
+\end{LectureExample}
+
+\textit{Tip:} Add \InlineCode{\label\{...\}} inside any lecture block (e.g.,
+\cref{lec:def:intake}) to cross-reference it from chapters or appendices.
+
+\MathNotesDocumentEnd

@@ -1,0 +1,256 @@
+\ChapterHeading{2}{TeX Library Reference}
+\label{ch:tex-library}
+
+\SectionBar{2.1}{Module Overview}
+\label{sec:tex-lib}
+
+Everything under \InlineCode{tex/} is a reusable module. The directory is split
+into semantic groups so a reader can map code to effects immediately:
+\begin{description}[leftmargin=2.4em,labelwidth=2.2em]
+  \item[\texttt{core/}] Foundational packages, typography helpers, and shared
+    macros. These files define the vocabulary used by every project.
+  \item[\texttt{styles/}] Visual identity for the textbook and homework formats.
+    The geometry, headers, and display environments all live here.
+  \item[\texttt{modules/}] Opt-in shims. Right now the only module toggles the
+    homework style into ``embedded'' mode before streaming content into the book.
+  \item[\texttt{system/}] Bootstrap helpers and the standalone wrappers that
+    hide documentclass boilerplate for homework, intake notes, and lab reports.
+\end{description}
+Each sub-section below documents why every line in these modules exists and how
+future changes should be staged.
+
+\SectionBar{2.2}{\texttt{tex/core/colors.tex}: Palette Bootstrap}
+\label{sec:core-colors}
+
+The colour module keeps the palette declarative:
+\begin{enumerate}[leftmargin=2em]
+  \item \InlineMacro{\usepackage[dvipsnames]{xcolor}} loads the extended colour
+        names once for the entire toolkit.
+  \item Five \InlineMacro{\providecommand} calls define override-friendly storage
+        slots for the semantic colours (\InlineCode{Primary}, \InlineCode{Accent},
+        \InlineCode{RuleGray}, \InlineCode{Highlight}, and \InlineCode{Link}).
+        Using \InlineMacro{\providecommand} instead of \InlineMacro{\newcommand}
+        means downstream documents can reassign a colour before this file loads.
+  \item \InlineMacro{\MathColorDefine} is a helper macro that converts the stored
+        model/spec pair into a named colour via \InlineMacro{\definecolor}.
+        Calling it for each palette entry keeps the public API tiny.
+  \item \InlineMacro{\MathColorOverride} exposes a single entry point for runtime
+        overrides. It updates both the stored model/spec pair \emph{and} calls
+        \InlineMacro{\MathColorDefine} so later macros see the new value.
+  \item The \InlineMacro{\AtBeginDocument} block syncs \InlineMacro{\hypersetup}
+        with the palette so hyperlinks match the rest of the design.
+\end{enumerate}
+Every document that wants a different palette does so by redefining the stored
+spec values before loading this file—no manual \InlineMacro{\definecolor}
+clutter appears elsewhere.
+
+\SectionBar{2.3}{\texttt{tex/core/base.tex}: Common Packages and Macros}
+\label{sec:core-base}
+
+This file centralises the dependencies shared by both projects.
+\begin{description}[leftmargin=2.6em,labelwidth=2.4em]
+  \item[\textbf{Math \& layout packages}] The opening \InlineMacro{\usepackage}
+        block imports the AMS suite, \texttt{mathtools} (fixes alignment quirks),
+        list utilities (\texttt{enumitem}), float helpers, \texttt{needspace} for
+        widow/orphan control, and quality-of-life packages such as
+        \texttt{hyperref}. Loading them once prevents mismatched versions between
+        the book and homework PDFs.
+  \item[\textbf{Graphics stack}] \texttt{graphicx}, \texttt{tikz}, and
+        \texttt{pgfplots} are configured together so the compatibility level and
+        libraries stay aligned. Any figure produced in one document will compile
+        in the other.
+  \item[\textbf{Utility macros}] The \InlineMacro{\vect}, \InlineMacro{\mat},
+        \InlineMacro{\R}, and similar shorthands keep mathematical expressions
+        readable. Each macro exists because it appears somewhere in the sample
+        content; if you add a new convenience wrapper, document it in this
+        section and inside the homework guide.
+  \item[\textbf{Environment definitions}] \InlineMacro{\newtheorem} entries align
+        numbering with the current section, while the custom
+        \InlineMacro{\textbookproblem} and \InlineMacro{\solutionbox}
+        environments format exercises and answers consistently across projects.
+\end{description}
+Because all maths-centric dependencies sit here, downstream documents only need
+to manage content—they rarely touch this file unless a new global macro is
+introduced.
+
+\SectionBar{2.4}{\texttt{tex/styles/notes.tex}: Book Layout}
+\label{sec:styles-notes}
+
+The notes style translates the project into a textbook aesthetic:
+\begin{enumerate}[leftmargin=2em]
+  \item \textbf{Geometry block.} The \InlineMacro{\usepackage[...]{geometry}}
+        call defines the wide left margin (for commentary), narrow top margin,
+        and increased \InlineMacro{\marginparwidth}. Every numeric choice is the
+        result of iterating on readability—changing it here updates the whole
+        book.
+  \item \textbf{Font selection.} A trio of \InlineMacro{\IfFontExistsTF} checks
+        prefer JetBrains Mono, Helvetica, and Times New Roman while falling back
+        to TeX Gyre alternatives. The macros \InlineMacro{\NotesFontBody},
+        \InlineMacro{\NotesFontHeader}, etc. centralise font usage so the rest of
+        the code speaks in roles, not typefaces.
+  \item \textbf{Headers and footers.} The \InlineMacro{\pagestyle{fancy}} block
+        creates mirrored headers that swap chapter titles and page numbers on odd
+        and even pages. Setting \InlineMacro{\headheight} twice prevents common
+        LaTeX warnings.
+  \item \textbf{Counters.} \InlineMacro{\numberwithin} and the custom counters
+        (\InlineCode{textexample}, \InlineCode{notestheorem}, etc.) ensure every
+        displayed element tracks the chapter number automatically.
+  \item \textbf{Environments.} The \InlineMacro{\begin{textexample}} definition
+        draws the highlight banner while preserving line breaks; the theorem and
+        definition boxes share a \texttt{tcolorbox} style so they always inherit
+        the palette.
+  \item \textbf{Headings.} \InlineMacro{\ChapterHeading}, \InlineMacro{\ContentsHeading},
+        and \InlineMacro{\SectionBar} render the decorative chapter and section
+        bars. They encapsulate TikZ drawing commands so authors never have to
+        think about coordinates.
+\end{enumerate}
+Whenever you adjust typography or spacing, update the explanatory bullets above
+and commit the rationale with the change. That practice keeps the guide in sync
+with the code.
+
+\SectionBar{2.5}{\texttt{tex/styles/homework.tex}: Assignment Layout}
+\label{sec:styles-homework}
+
+The homework style mirrors the book without duplicating logic:
+\begin{enumerate}[leftmargin=2em]
+  \item \textbf{Embedding toggle.} Lines 9--25 declare the boolean
+        \InlineMacro{\ifMathHomeworkEmbedded}. Standalone PDFs leave it false,
+        but the embedding module flips the flag before loading this file.
+  \item \textbf{Palette adjustments.} \InlineMacro{\HomeworkApplyStandalonePalette}
+        recolours accents when printing assignments on their own so pages remain
+        legible on monochrome printers.
+  \item \textbf{Geometry.} The \InlineMacro{\usepackage{geometry}} block is
+        conditionally loaded only when producing standalone PDFs. Embedded mode
+        inherits the book geometry to avoid conflicting header widths.
+  \item \textbf{Header metadata.} \InlineMacro{\HomeworkSetup} stores course and
+        assignment information; \InlineMacro{\HomeworkHeader} formats it within a
+        \texttt{fancyhdr} header. The pagestyle is applied automatically at
+        \InlineMacro{\AtBeginDocument}.
+  \item \textbf{Print layout helper.} The optional print mode uses
+        \InlineMacro{\HomeworkEnablePrintLayout} to reserve vertical space after
+        each \InlineMacro{\solutionbox}, making handwritten answers neat.
+  \item \textbf{Embedding helper.} \InlineMacro{\HomeworkIncludeInNotes} wraps
+        every embedded assignment: it increments a counter for numbering,
+        injects a table-of-contents entry, temporarily tweaks colours, and then
+        restores the palette after the content finishes streaming in.
+\end{enumerate}
+The implementation looks long because each behaviour is isolated and commented.
+This separation pays off when you only need to override one aspect—say, the
+header metadata—without touching print layout logic.
+
+\SectionBar{2.6}{\texttt{tex/modules/homework-embed.tex}: Embedding Shim}
+\label{sec:module-homework}
+
+This module contains just enough logic to reuse the homework style inside the
+book:
+\begin{enumerate}[leftmargin=2em]
+  \item It ensures \InlineMacro{\ifMathHomeworkEmbedded} exists and then forces
+        it to \texttt{true}. That flag prevents the homework geometry from
+        loading and lets the book own the page layout.
+  \item The module assumes \InlineMacro{\TexInput} is defined. When the textbook
+        loads it, \InlineMacro{\TexInput} expands to the repository-aware import
+        helper documented in Section~\ref{sec:top-level-layout}. If you compile
+        the module in isolation (for regression tests), the fallback definition
+        simply delegates to \InlineMacro{\input}.
+  \item Finally, it loads \InlineCode{styles/homework}. No other side effects
+        occur—the caller remains in charge of geometry, counters, and headers.
+\end{enumerate}
+
+Despite its size, this file is the connective tissue between the two deliverable
+types. Without it, homework exercises would either break the textbook layout or
+lose their consistent styling.
+
+\SectionBar{2.7}{\texttt{tex/system/document-*.tex}: Standalone Wrappers}
+\label{sec:system-wrappers}
+
+The wrappers under \InlineCode{tex/system/} eliminate repetitive guards in the
+project directories:
+\begin{description}[leftmargin=2.6em,labelwidth=2.4em]
+  \item[\textbf{document-homework.tex}] Declares
+        \InlineCode{\HomeworkDocumentBegin/\HomeworkDocumentEnd},
+        loads the homework style when compiled directly, and becomes a no-op
+        when \InlineMacro{\ifMathHomeworkEmbedded} is true. Homework sources now
+        contain only content and metadata via \InlineMacro{\HomeworkSetup}.
+  \item[\textbf{document-notes.tex}] Handles the lecture/discussion intake
+        workflow. Authors set a title/author/date, input the wrapper, and start
+        capturing notes—the wrapper selects the article class, loads
+        \InlineCode{tex/styles/notes.tex}, applies the standalone header, and
+        calls \InlineMacro{\MathNotesDocumentEnd} for them.
+  \item[\textbf{document-report.tex}] Performs the same role for lab reports,
+        wiring the shared \InlineCode{lab-report-template.sty} into both
+        standalone PDFs and appendix inclusions.
+  \item[\textbf{bootstrap.tex}] Still exposes the repository-aware
+        \InlineMacro{\TexInput} helper, but most day-to-day files no longer need
+        to reimplement its detection logic—the wrappers import it once.
+\end{description}
+
+Adding a new deliverable now means ``write content + point at the wrapper'',
+which keeps onboarding tight and enforces a single source of truth for every
+document type.
+
+\SectionBar{2.7}{Cross-Referencing Intake Material}
+\label{sec:notes-usage-examples}
+
+The snippet below mirrors the reference template: it combines a numbered figure,
+a styled definition, and a theorem box. The surrounding prose demonstrates how a
+curated chapter cites real intake material such as \Probref{prob:hw-3.4-23} from
+Homework~5 and the discussion scratch work in \probref{prob:disc-W7-Q3}.
+
+\begin{figure}[H]
+  \centering
+  \begin{tikzpicture}[scale=1.1]
+    \draw[gray!40,->] (-3.5,0) -- (3.5,0) node[right] {$x$};
+    \draw[gray!40,->] (0,-1.8) -- (0,1.8) node[above] {$y$};
+    \draw[Primary,thick,smooth,samples=120,domain=-3.2:3.2]
+      plot (\x,{0.9*sin(deg(\x))}) node[pos=0.92,above right] {$y=\sin x$};
+    \draw[Accent,thick,dashed,samples=120,domain=-3.2:3.2]
+      plot (\x,{0.6*cos(deg(\x))}) node[pos=0.18,below] {$y=\tfrac{3}{5}\cos x$};
+  \end{tikzpicture}
+  \caption{Sine and cosine responses used when discussing frequency-domain limits.}
+  \label{fig:notes-main-plot}
+\end{figure}
+
+\MarginFigureAuto{%
+  \begin{tikzpicture}[scale=0.9]
+    \draw[gray!40,->] (-2.4,0) -- (2.4,0) node[right] {$x$};
+    \draw[gray!40,->] (0,-1.3) -- (0,1.3);
+    \draw[Primary,thick,samples=100,domain=-2.2:2.2]
+      plot (\x,{0.7*sin(deg(\x))});
+  \end{tikzpicture}
+}{Margin sketch that mirrors the main plot for quick scanning.}
+
+\begin{definitionBox}{Gain--Bandwidth Product}
+\label{def:notes-gain-bandwidth}
+The \emph{gain--bandwidth product} is the closed-loop gain of an amplifier
+multiplied by the frequency at which that gain is measured. It captures how
+fast a controller may respond before stability erodes.
+\end{definitionBox}
+
+\begin{theoremBox}{Single-Pole Closed-Loop Response}
+\label{thm:notes-single-pole}
+With low-frequency gain $G_0$ and dominant pole $\omega_p$, driving the network
+captured in \cref{fig:notes-main-plot} produces the transfer function
+\[
+  G(j\omega) = \frac{G_0}{1 + j\omega/\omega_{\mathrm{p,eq}}}, \qquad
+  \omega_{\mathrm{p,eq}} = \omega_p + \frac{1}{RC}.
+\]
+\end{theoremBox}
+
+\begin{textexample}{Interpreting Frequency Sweeps}
+\label{ex:notes-frequency-sweep}
+\[
+  \left|G(j\omega)\right| = \frac{G_0}{\sqrt{1 + (\omega/\omega_{\mathrm{p,eq}})^2}}
+\]
+\solutiontag\; Sample a handful of frequencies and compare the magnitudes against
+\Probref{prob:hw-3.4-23}. The homework entry spells out the algebra behind the
+matrix manipulations, while \probref{prob:disc-W7-Q3} retains the scratch work
+that led to the approximation. Referencing Definition~\ref{def:notes-gain-bandwidth}
+keeps the terminology inline with the discussion notes.
+\end{textexample}
+
+Citing the homework entry via \Probref{prob:hw-3.4-23} lets the chapter summarise
+the takeaway without repeating every row operation. Likewise,
+\probref{prob:disc-W7-Q3} preserves the spontaneous discussion notes that
+eventually produced \cref{thm:notes-single-pole}. By keeping figures, theorem
+boxes, and cross-references aligned with the intake appendices, you preserve the
+original aesthetic while keeping the capture workflow fast.

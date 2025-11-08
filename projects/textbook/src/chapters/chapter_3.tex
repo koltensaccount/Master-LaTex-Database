@@ -1,0 +1,203 @@
+\ChapterHeading{3}{Authoring Workflow}
+\label{ch:authoring-workflow}
+
+\SectionBar{3.1}{Build Tooling and Commands}
+\label{sec:build-tooling}
+
+The toolkit relies on \texttt{xelatex} (for Unicode-friendly typesetting) and
+optionally \texttt{latexmk} (for incremental builds). The commands below assume
+you run them from the repository root; feel free to adapt them into shell
+aliases or editor tasks.
+
+\begin{description}[leftmargin=2.6em,labelwidth=2.4em]
+  \item[Compile the textbook once]
+
+        \begin{CodeBlock}
+\detokenize{cd projects/textbook/src}
+\detokenize{xelatex -interaction=nonstopmode -output-directory ../output main.tex}
+        \end{CodeBlock}
+
+        The explicit \InlineCode{-output-directory} flag mirrors the structure
+        explained in Section~\ref{sec:output-hygiene}: every build artefact ends
+        up alongside the source in \InlineCode{../output/}.
+
+  \item[Continuous documentation build]
+
+        \begin{CodeBlock}
+\detokenize{cd projects/textbook/src}
+\detokenize{latexmk -xelatex -interaction=nonstopmode -outdir=../output main.tex}
+        \end{CodeBlock}
+
+        \texttt{latexmk} watches the \InlineCode{src/} tree and only recompiles
+        what changed. The flags mimic the single-run command so log parsing stays
+        consistent across both approaches.
+
+  \item[Compile a standalone homework]
+
+        \begin{CodeBlock}
+\detokenize{cd projects/homework}
+\detokenize{latexmk -xelatex -interaction=nonstopmode -halt-on-error -file-line-error homework05.tex}
+        \end{CodeBlock}
+
+        Swap \InlineCode{hw05} for any other assignment file. latexmk creates a
+        sibling directory named after the `.tex` file (e.g.,
+        \InlineCode{projects/homework/homework05/homework05.*}) so the
+        command above keeps artefacts next to the source without littering the
+        root. Discussion, lecture, and report templates pick up the same
+        behaviour automatically.
+\end{description}
+
+Re-run XeLaTeX (or let \texttt{latexmk} handle it) after changing geometry,
+headers, or table-of-contents entries; a second pass updates cross-references
+and hyperlink targets.
+
+\SectionBar{3.2}{Adding New Content}
+\label{sec:adding-content}
+
+Both documentation and homework templates encourage copious inline explanation.
+Follow the steps in this section so the structure remains predictable.
+
+\subsection*{Adding a documentation chapter}
+\begin{enumerate}[leftmargin=2em]
+  \item Duplicate an existing file under
+        \InlineCode{projects/textbook/src/chapters/} and rename it
+        (for example, \InlineCode{chapter_4.tex}).
+  \item Update the call to \InlineMacro{\ChapterHeading}, set unique labels with
+        \InlineMacro{\label}, and immediately add a short paragraph explaining the
+        goal of the chapter. Every code sample should mention which file it
+        modifies so readers can trace the change.
+  \item No manual table-of-contents edits are necessary—the wrapper file simply
+        provides the styled heading and defers to \InlineMacro{\tableofcontents}.
+  \item Add an \InlineCode{\input} line to
+        \InlineCode{projects/textbook/src/main.tex}, placing it with the other
+        chapter imports. The build script intentionally keeps the chapter list in
+        one place so reviewers can validate the reading order quickly.
+\end{enumerate}
+
+\subsection*{Adding homework content}
+\begin{enumerate}[leftmargin=2em]
+  \item Create a new file in \InlineCode{projects/homework/}—the file should
+        contain nothing but problems and solutions wrapped in the environments
+        documented in Section~\ref{sec:core-base}. The guard at the top of each
+        file is now the single line
+        \InlineCode{\textbackslash input\{../../tex/system/document-homework.tex\}},
+        so the wrapper decides whether to run the standalone preamble.
+  \item Update the appendix list in
+        \InlineCode{projects/textbook/src/main.tex}. Append another
+        \InlineMacro{\HomeworkIncludeInNotes} entry with the display name and the
+        relative path to the homework file. The order of these calls controls the
+        numbering in the appendix table of contents.
+\end{enumerate}
+
+All homework copies—embedded, standalone, and print-mode—share the same source
+file thanks to the document-homework wrapper. This design eliminates the drift
+that typically happens when exercises are maintained in multiple locations.
+
+\subsection*{Capturing lecture or discussion notes}
+\begin{enumerate}[leftmargin=2em]
+  \item Duplicate the thin templates under
+        \InlineCode{projects/lecture/lecture-example.tex} or
+        \InlineCode{projects/discussion/discussion-example.tex}. Each file simply
+        sets metadata and inputs
+        \InlineCode{../../tex/system/document-notes.tex}, so the dual-use guard
+        lives in one place.
+  \item Use \InlineMacro{\newlecture} (or \InlineMacro{\newdiscussion}) to start a
+        section. The macros open a bullet list automatically; reach for
+        \InlineMacro{\LecturePoint} or \InlineMacro{\DiscussionPoint} to append
+        timestamped bullets without thinking about formatting.
+  \item When you need inline scratch work, drop into the lightweight
+        \InlineMacro{\begin\{LectureExample\}...\end\{LectureExample\}} or
+        \InlineMacro{\begin\{DiscussionDrill\}...\end\{DiscussionDrill\}} helpers.
+        These counters are local to the intake templates so they never conflict
+        with the numbered theorem/example environments in the polished chapters.
+  \item Grayscale versions of the chapter boxes—\InlineMacro{\begin\{LectureDefinition\}}, 
+        \InlineMacro{\begin\{LectureTheorem\}}, and \InlineMacro{\begin\{LectureExample\}} 
+        (with matching discussion aliases)—live in \InlineCode{tex/styles/notes.tex}.
+        They never touch the main chapter counters, so you can stamp quick 
+        definitions or theorems during class without polluting the curated numbering.
+\end{enumerate}
+
+\SectionBar{3.3}{Embedding Homework in the Documentation}
+\label{sec:embedding-homework}
+
+The appendix logic documented in Section~\ref{sec:styles-homework} and
+Section~\ref{sec:module-homework} is deliberate. When you add a new assignment:
+\begin{enumerate}[leftmargin=2em]
+  \item Confirm the homework file compiles on its own (with the standalone
+        preamble active). This sanity check ensures solution boxes, theorem
+        counters, and colour overrides all behave as expected before the
+        textbook pulls the file in.
+  \item Use \InlineMacro{\HomeworkIncludeInNotes} with an optional display name if
+        you need a shorter table-of-contents entry. The macro automatically:
+        \begin{itemize}[leftmargin=1.5em]
+          \item bumps the appendix counter,
+          \item pushes a TOC entry,
+          \item inserts a section bar that matches the rest of the book, and
+          \item restores the standard palette when the homework finishes.
+        \end{itemize}
+  \item Keep spacing consistent. The macro temporarily redefines
+        \InlineMacro{\newpage} and \InlineMacro{\clearpage} to avoid blank pages in
+        the appendix. Do not reintroduce those commands inside the homework source
+        unless a page break is absolutely necessary.
+\end{enumerate}
+
+Treat each assignment as documentation in its own right: annotate
+non-obvious solution steps and reference any shared macros the problems rely on.
+
+\SectionBar{3.4}{Per-Document Overrides}
+\label{sec:document-overrides}
+
+When the shared modules are almost—but not quite—what you need, apply local
+overrides that respect the layering described in Chapter~\ref{ch:tex-library}.
+
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{Palette experiments.} Redefine colour specs before calling
+        \InlineMacro{\TexInput\{core/colors\}} (Section~\ref{sec:core-colors}).
+        For single-document experiments, wrap the override in a group so the
+        change does not leak into subsequent inputs.
+  \item \textbf{Geometry tweaks.} Use the pattern from
+        \InlineCode{projects/textbook/src/main.tex}: capture the current
+        \InlineMacro{\headwidth}, enter a \InlineMacro{\newgeometry} block, and
+        restore everything afterwards. This keeps embedded content from mutating
+        the global layout.
+  \item \textbf{Conditional content.} The homework style exposes the boolean
+        \InlineMacro{\ifMathHomeworkEmbedded}. Use it to swap instructions or hide
+        print-only banners when the same content is embedded in the book.
+  \item \textbf{Custom macros.} Add small helpers to
+        \InlineCode{tex/core/base.tex} only when multiple documents need them.
+        Otherwise, define them near the content block and annotate why they are
+        local to that document.
+\end{itemize}
+
+Always add a brief comment when applying an override; the comment should explain
+both the symptom and the fix. Future maintainers can then confirm whether the
+original constraint still holds.
+
+\SectionBar{3.5}{Maintenance Checklist}
+\label{sec:maintenance-checklist}
+
+Before opening a pull request or tagging a release, walk through this list:
+\begin{enumerate}[leftmargin=2em]
+  \item \textbf{Clean builds.} Run the textbook and every affected homework
+        through \texttt{latexmk}. Confirm that each per-file output directory
+        (and \InlineCode{../output/} if you keep using it for the book) only
+        contains fresh artefacts.
+  \item \textbf{Log audit.} Skim the generated \InlineCode{.log} files for overfull
+        boxes, missing references, and font warnings. Appendix sections are most
+        prone to margin issues because they reuse the homework typography.
+  \item \textbf{Documentation sync.} Keep the prose in
+        \InlineCode{projects/textbook/src/chapters/} or the Markdown notes under
+        \InlineCode{docs/} up to date so every new macro or workflow is described
+        in at least one place.
+  \item \textbf{Output hygiene.} Delete stray PDFs, logs, and Synctex files that
+        slipped outside the per-file directories. The root
+        \InlineCode{.gitignore} already blankets common extensions, but explicit
+        cleanup keeps reviewers focused on the meaningful diffs.
+  \item \textbf{Cross-project parity.} If you changed a shared module, recompile
+        at least one standalone homework to ensure the update behaves identically
+        outside the textbook.
+\end{enumerate}
+
+Following this routine preserves the repository's goal: every file, directory,
+and macro exists for a documented reason, and collaborators can reproduce the
+build without guessing at hidden conventions.

@@ -1,0 +1,49 @@
+\makeatletter
+\@ifundefined{ifLabReportEmbedded}{\newif\ifLabReportEmbedded}{}
+\LabReportEmbeddedtrue
+\makeatother
+
+\providecommand{\TexInput}[1]{\input{#1}}
+\TexInput{styles/report/lab-report-template.sty}
+
+\newcounter{LabReportEmbedCounter}[chapter]
+\renewcommand{\theLabReportEmbedCounter}{\thechapter.\arabic{LabReportEmbedCounter}}
+
+\newlength{\LabReportSavedParindent}
+\newlength{\LabReportSavedParskip}
+\newcommand{\LabReportSavedBaselinestretch}{}
+
+\newcommand{\LabReportAppendixBegin}{%
+  \setlength{\LabReportSavedParindent}{\parindent}%
+  \setlength{\LabReportSavedParskip}{\parskip}%
+  \edef\LabReportSavedBaselinestretch{\baselinestretch}%
+  \newgeometry{top=3.5cm,bottom=3.5cm,left=2cm,right=2cm}%
+  \setlength{\headwidth}{\textwidth}%
+  \LabReportApplySpacing
+  \LabReportApplyHeaders
+}
+
+\newcommand{\LabReportAppendixEnd}{%
+  \clearpage
+  \restoregeometry
+  \setlength{\headwidth}{\OriginalHeadWidth}%
+  \setlength{\parindent}{\LabReportSavedParindent}%
+  \setlength{\parskip}{\LabReportSavedParskip}%
+  \renewcommand{\baselinestretch}{\LabReportSavedBaselinestretch}%
+  \normalfont\selectfont
+  \pagestyle{fancy}
+}
+
+\newcommand{\LabReportIncludeInNotes}[3][]{%
+  \clearpage
+  \stepcounter{LabReportEmbedCounter}%
+  \if\relax\detokenize{#1}\relax
+    \def\LabReportTOCTitle{#2}%
+  \else
+    \def\LabReportTOCTitle{#1}%
+  \fi
+  \phantomsection
+  \label{app:labreport-\thechapter-\arabic{LabReportEmbedCounter}}%
+  \SectionBar{\theLabReportEmbedCounter}{#2}%
+  \input{#3}%
+}

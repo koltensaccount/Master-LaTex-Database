@@ -1,0 +1,20 @@
+% ====================================================
+% Module: homework-embed
+% ----------------------------------------------------
+% Signals that homework material is being embedded into
+% a parent document (the guide/book) and then loads the
+% homework layout in that special "embedded" mode.
+% ====================================================
+
+\makeatletter
+\@ifundefined{ifMathHomeworkEmbedded}{%
+  \newif\ifMathHomeworkEmbedded
+}{}
+\makeatother
+\MathHomeworkEmbeddedtrue
+
+% The document that imports this module defines \TexInput.
+% Provide a safe fallback so the module also works when
+% compiled in isolation (useful for unit testing).
+\providecommand{\TexInput}[1]{\input{#1}}
+\TexInput{styles/homework}

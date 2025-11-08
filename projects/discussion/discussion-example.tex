@@ -1,0 +1,48 @@
+% !TEX root = ./discussion-example.tex
+% !TEX program = latexmk
+\makeatletter
+\def\input@path{{./}{../}{../../}{../../../}{../../../../}}
+\makeatother
+% Example discussion capture demonstrating the intake macros.
+\def\MathNotesDocTitle{Discussion Notes Example}
+\def\MathNotesDocAuthor{MATH 2243}
+\def\MathNotesDocDate{2025-10-21}
+% Uncomment to mirror section titles in the header:
+% \def\MathNotesDocHeader{\MakeUppercase{\leftmark}}
+\input{tex/system/document-notes.tex}
+
+\newdiscussion{<pack here>}{<sheet or topic>}{<YYYY-MM-DD>}
+\DiscussionSection[sec:discussion-warmup]{Warm-up Drill}
+\DiscussionPoint{Capture the raw bullet points from the session.}
+\DiscussionPoint[Tag]{Use the optional label to add a cue such as Warm-up/Action.}
+\DiscussionSection[sec:discussion-main]{Main Worksheet}
+\DiscussionPoint{Call back to earlier sections with \cref{sec:discussion-warmup} to keep continuity.}
+\DiscussionPoint[Check]{Note any grading or rubric cues.}
+\closenotes
+
+\begin{DiscussionDefinition}[Optional subtitle]\label{disc:def:intake}
+Use this grayscale box for quick definitions or terminology that surfaced during
+the discussion.
+\end{DiscussionDefinition}
+
+\begin{DiscussionTheorem}[Optional subtitle]\label{disc:thm:intake}
+Drop rules-of-thumb or impromptu proofs here.
+\end{DiscussionTheorem}
+
+\begin{DiscussionExample}[Optional subtitle]\label{disc:ex:intake}
+Keep scratch calculations or sketches near the discussion log.
+\end{DiscussionExample}
+
+\textit{Tip:} Add labels (\InlineCode{\label\{...\}}) inside any block to make
+cross-referencing easy, e.g., \cref{disc:def:intake}.
+
+\newdiscprob{W7}{Q3}[GBW warm-up]
+Estimate the settling time for a 1\% error band when the amplifier from \cref{fig:notes-main-plot}
+drives a unit-step input. Reference \cref{def:notes-gain-bandwidth} for terminology.
+\begin{solution}
+Approximate the closed-loop response with the dominant pole from \cref{thm:notes-single-pole} and apply
+the standard $4/\zeta\omega_n$ heuristic. Compare the estimate with the measured values in the lecture log.
+\end{solution}
+\end{discproblem}
+
+\MathNotesDocumentEnd

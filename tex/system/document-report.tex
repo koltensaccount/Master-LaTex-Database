@@ -1,0 +1,56 @@
+% ====================================================
+% Standalone Lab Report Document Wrapper
+% ----------------------------------------------------
+% Loads the shared lab-report style from tex/styles/
+% and exposes begin/end helpers so individual reports
+% only focus on content. Embedded builds toggle
+% \ifLabReportEmbedded to skip the standalone branch.
+% ====================================================
+
+\makeatletter
+\providecommand{\LabReportLocateTexPrefix}{%
+  \def\LabReportTexPrefix{}%
+  \@for\labreport@base:=,../,../../,../../../,../../../../,../../../../../\do{%
+    \ifx\LabReportTexPrefix\@empty
+      \IfFileExists{\labreport@base tex/core/colors.tex}{%
+        \xdef\LabReportTexPrefix{\labreport@base tex/}%
+      }{}%
+    \fi
+  }%
+  \ifx\LabReportTexPrefix\@empty
+    \PackageError{document-report}{Cannot locate tex/ directory}{Ensure this wrapper is included from within the repository tree or define \string\LabReportTexPrefix\space manually.}%
+  \fi
+}
+\makeatother
+
+\providecommand{\LabReportDocClass}{article}
+\providecommand{\LabReportDocOptions}{11pt,letterpaper}
+\providecommand{\LabReportDocSetup}{}
+
+\providecommand{\LabReportDocumentBegin}{}
+\providecommand{\LabReportDocumentEnd}{}
+\providecommand{\LabReportStandaloneEnd}{}
+
+\makeatletter
+\@ifundefined{ifLabReportEmbedded}{%
+  \newif\ifLabReportEmbedded
+  \LabReportEmbeddedfalse
+}{}
+\makeatother
+
+\ifLabReportEmbedded
+  \renewcommand{\LabReportDocumentBegin}{}
+  \renewcommand{\LabReportDocumentEnd}{}
+  \renewcommand{\LabReportStandaloneEnd}{}
+  \LabReportDocSetup
+\else
+  \documentclass[\LabReportDocOptions]{\LabReportDocClass}
+  \LabReportLocateTexPrefix
+  \input{\LabReportTexPrefix core/colors.tex}
+  \input{\LabReportTexPrefix core/base.tex}
+  \usepackage{\LabReportTexPrefix styles/report/lab-report-template}
+  \LabReportDocSetup
+  \renewcommand{\LabReportDocumentBegin}{\begin{document}}
+  \renewcommand{\LabReportDocumentEnd}{\end{document}}
+  \renewcommand{\LabReportStandaloneEnd}{\LabReportDocumentEnd}
+\fi

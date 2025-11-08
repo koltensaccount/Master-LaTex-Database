@@ -1,0 +1,80 @@
+% ====================================================
+% Standalone Notes Document Wrapper
+% ----------------------------------------------------
+% Centralizes the boilerplate required to compile the
+% lecture/discussion intake files outside the textbook.
+% Documents set metadata by defining the macros below
+% before \input'ing this file. When embedded inside the
+% book, the wrapper detects \ifMathNotesEmbedded and
+% skips the standalone documentclass/preamble branch.
+% ====================================================
+
+\makeatletter
+\providecommand{\MathNotesLocateTexPrefix}{%
+  \def\MathNotesTexPrefix{}%
+  \@for\mathnotes@base:=,../,../../,../../../,../../../../,../../../../../\do{%
+    \ifx\MathNotesTexPrefix\@empty
+      \IfFileExists{\mathnotes@base tex/core/colors.tex}{%
+        \xdef\MathNotesTexPrefix{\mathnotes@base tex/}%
+      }{}%
+    \fi
+  }%
+  \ifx\MathNotesTexPrefix\@empty
+    \PackageError{document-notes}{Cannot locate tex/ directory}{Ensure this wrapper is included from within the repository tree or define \string\MathNotesTexPrefix\space manually.}%
+  \fi
+}
+\makeatother
+
+\providecommand{\MathNotesDocClass}{article}
+\providecommand{\MathNotesDocOptions}{11pt}
+\providecommand{\MathNotesDocTitle}{Intake Notes}
+\providecommand{\MathNotesDocAuthor}{}
+\providecommand{\MathNotesDocDate}{\today}
+\providecommand{\MathNotesDocHeader}{\MakeUppercase{\MathNotesDocTitle}}
+\providecommand{\MathNotesDocSetup}{}
+\providecommand{\MathNotesDocTitleBlock}{\maketitle}
+
+\providecommand{\MathNotesDocumentEnd}{}
+
+\makeatletter
+\@ifundefined{ifMathNotesEmbedded}{%
+  \newif\ifMathNotesEmbedded
+  \MathNotesEmbeddedfalse
+}{}
+\makeatother
+
+\ifMathNotesEmbedded
+  % Already inside the textbook build; layouts and fonts
+  % are configured by tex/styles/notes.tex.
+  \renewcommand{\MathNotesDocumentEnd}{}
+\else
+  \documentclass[\MathNotesDocOptions]{\MathNotesDocClass}
+  \MathNotesLocateTexPrefix
+  \makeatletter
+  \@ifundefined{c@chapter}{\newcounter{chapter}}{}%
+  \makeatother
+  \input{\MathNotesTexPrefix core/colors.tex}
+  \input{\MathNotesTexPrefix core/base.tex}
+  \input{\MathNotesTexPrefix styles/notes.tex}
+  \MathNotesDocSetup
+
+  \pagestyle{fancy}
+  \fancyhf{}
+  \fancyhead[L]{\NotesFontHeader\MathNotesDocHeader}
+  \fancyhead[R]{\NotesFontHeader\thepage}
+  \renewcommand{\headrulewidth}{0.4pt}
+  \fancypagestyle{plain}{%
+    \fancyhf{}
+    \fancyhead[L]{\NotesFontHeader\MathNotesDocHeader}%
+    \fancyhead[R]{\NotesFontHeader\thepage}%
+    \renewcommand{\headrulewidth}{0.4pt}%
+  }
+
+  \title{\MathNotesDocTitle}
+  \author{\MathNotesDocAuthor}
+  \date{\MathNotesDocDate}
+
+  \begin{document}
+  \MathNotesDocTitleBlock
+  \renewcommand{\MathNotesDocumentEnd}{\end{document}}
+\fi

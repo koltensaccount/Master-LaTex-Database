@@ -1,0 +1,170 @@
+% ====================================================
+% HOMEWORK STYLE: Printable Assignment Layout
+% ----------------------------------------------------
+% Provides the letter-sized layout, header metadata, and
+% optional print helpers used for individual homework PDFs.
+% When embedding homework content inside the notes, call
+% \EnableHomeworkEmbedding before loading this file.
+% ====================================================
+
+% --- HOMEWORK: Embedding toggle (standalone by default) ---
+\makeatletter
+\@ifundefined{ifMathHomeworkEmbedded}{%
+  \newif\ifMathHomeworkEmbedded
+  \MathHomeworkEmbeddedfalse
+}{}
+\makeatother
+
+\providecommand{\EnableHomeworkEmbedding}{\MathHomeworkEmbeddedtrue}
+\providecommand{\DisableHomeworkEmbedding}{\MathHomeworkEmbeddedfalse}
+
+% --- HOMEWORK: Palette helper (standalone uses green accent) ---
+\newcommand{\HomeworkApplyStandalonePalette}{%
+  \MathColorOverride{Accent}{HTML}{2E8B77}%
+  \MathColorOverride{Highlight}{HTML}{335C9F}%
+}
+
+\providecommand{\HomeworkSetHeading}[1]{}
+
+% --- HOMEWORK: Counter for embedded homework sections ---
+\makeatletter
+\@ifundefined{c@chapter}{%
+  \newcounter{HomeworkEmbedCounter}%
+  \renewcommand{\theHomeworkEmbedCounter}{\arabic{HomeworkEmbedCounter}}%
+}{%
+  \newcounter{HomeworkEmbedCounter}[chapter]%
+  \renewcommand{\theHomeworkEmbedCounter}{\thechapter.\arabic{HomeworkEmbedCounter}}%
+}
+\makeatother
+
+% --- HOMEWORK: Geometry & headers (skip when embedded) ---
+\ifMathHomeworkEmbedded
+  % Geometry/headings are managed by the outer document.
+\else
+  \HomeworkApplyStandalonePalette
+  \usepackage[
+    top=1.5cm,
+    bottom=3.5cm,
+    left=2cm,
+    right=2cm,
+    headheight=26pt,
+    headsep=18pt,
+    footskip=1in,
+    includeheadfoot
+  ]{geometry}
+\fi
+
+\usepackage{fancyhdr}
+
+% --- HOMEWORK: Metadata storage ---
+\newcommand{\HomeworkCourseInfo}{Course}
+\newcommand{\HomeworkStudent}{Student}
+\newcommand{\HomeworkAssignment}{Assignment}
+\newcommand{\HomeworkLecturer}{Lecturer}
+\newcommand{\HomeworkTA}{Teaching Assistant}
+
+\newcommand{\HomeworkSetup}[5]{%
+  \renewcommand{\HomeworkCourseInfo}{#1}%
+  \renewcommand{\HomeworkStudent}{#2}%
+  \renewcommand{\HomeworkAssignment}{#3}%
+  \renewcommand{\HomeworkLecturer}{#4}%
+  \renewcommand{\HomeworkTA}{#5}%
+}
+
+\newcommand{\HomeworkHeader}{%
+  \pagestyle{fancy}%
+  \fancyhf{}%
+  \setlength{\headheight}{26pt}%
+  \setlength{\footskip}{1.75in}%
+  \lhead{\HomeworkCourseInfo\\\HomeworkStudent}%
+  \chead{\Large\textbf{\HomeworkAssignment}}%
+  \rhead{Lecturer: \HomeworkLecturer\\TA: \HomeworkTA}%
+  \rfoot{\small Page \thepage}%
+  \renewcommand{\headrulewidth}{0.3pt}%
+  \renewcommand{\footrulewidth}{0pt}%
+  \setlength{\headsep}{1.5em}%
+}
+
+\ifMathHomeworkEmbedded
+  % Embedded mode: leave pagination/layout to the parent document.
+\else
+  \AtBeginDocument{%
+    \HomeworkHeader
+    \setcounter{page}{1}%
+    \setlength{\emergencystretch}{2em}%
+    \sloppy
+    \setlength{\arraycolsep}{4pt}%
+  }
+\fi
+
+% --- HOMEWORK: Optional print layout helper ---
+\newlength{\HomeworkPrintBlockHeight}
+\setlength{\HomeworkPrintBlockHeight}{3in}
+
+\newif\ifMathHomeworkPrintLayout
+\MathHomeworkPrintLayoutfalse
+
+\newcommand{\HomeworkEnablePrintLayout}[1][3in]{%
+  \setlength{\HomeworkPrintBlockHeight}{#1}%
+  \MathHomeworkPrintLayouttrue
+}
+
+\newcommand{\HomeworkDisablePrintLayout}{%
+  \MathHomeworkPrintLayoutfalse
+}
+
+\AtBeginDocument{%
+  \ifMathHomeworkPrintLayout
+    \AtEndEnvironment{solutionbox}{%
+      \par\vspace*{\HomeworkPrintBlockHeight}\pagebreak
+    }%
+  \fi
+}
+
+% --- HOMEWORK: Notes/appendix helpers ---
+\newcommand{\HomeworkNotesHeader}{%
+  \par\vspace{0.6em}%
+}
+
+\newcommand{\HomeworkIncludeInNotes}[3][]{%
+  \edef\HomeworkAccentModelBackup{\MathColorAccentModel}%
+  \edef\HomeworkAccentSpecBackup{\MathColorAccentSpec}%
+  \edef\HomeworkHighlightModelBackup{\MathColorHighlightModel}%
+  \edef\HomeworkHighlightSpecBackup{\MathColorHighlightSpec}%
+  \HomeworkApplyStandalonePalette
+  \clearpage
+  \stepcounter{HomeworkEmbedCounter}%
+  \def\HomeworkHeadingTitle{#2}%
+  \if\relax\detokenize{#1}\relax
+    \def\HomeworkTOCTitle{#2}%
+  \else
+    \def\HomeworkTOCTitle{#1}%
+  \fi
+  \edef\HomeworkSectionLabel{app:homework-\thechapter-\arabic{HomeworkEmbedCounter}}%
+  \markboth{\MakeUppercase{\appendixname~\thechapter\ -- \HomeworkHeadingTitle}}{\MakeUppercase{\appendixname~\thechapter\ -- \HomeworkHeadingTitle}}%
+  \ifcsname SectionBar\endcsname
+    \phantomsection
+    \label{\HomeworkSectionLabel}%
+    \SectionBar{\theHomeworkEmbedCounter}{\HomeworkHeadingTitle}%
+  \else
+    \phantomsection
+    \label{\HomeworkSectionLabel}%
+    \addcontentsline{toc}{section}{\protect\numberline{\theHomeworkEmbedCounter}\HomeworkTOCTitle}%
+    \par\vspace{0.5em}\noindent{\Large\bfseries \HomeworkHeadingTitle}\par\vspace{0.75em}%
+  \fi
+  \HomeworkNotesHeader
+  \begingroup
+    \setlength{\emergencystretch}{2em}%
+    \sloppy
+    \setlength{\arraycolsep}{4pt}%
+    \let\HomeworkSavedNewpage\newpage
+    \let\HomeworkSavedClearpage\clearpage
+    \renewcommand{\newpage}{\par\vspace{1em}}%
+    \renewcommand{\clearpage}{\par\vspace{1em}}%
+    \input{#3}%
+    \let\newpage\HomeworkSavedNewpage
+    \let\clearpage\HomeworkSavedClearpage
+  \endgroup
+  \MathColorOverride{Accent}{\HomeworkAccentModelBackup}{\HomeworkAccentSpecBackup}%
+  \MathColorOverride{Highlight}{\HomeworkHighlightModelBackup}{\HomeworkHighlightSpecBackup}%
+}

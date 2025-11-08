@@ -1,0 +1,213 @@
+% !TEX root = ./Master_Lab_Report_Template.tex
+% !TEX program = latexmk
+\makeatletter
+\def\input@path{{./}{../}{../../}{../../../}{../../../../}}
+\makeatother
+\def\LabReportDocOptions{11pt,letterpaper}
+\input{tex/system/document-report.tex}
+
+% Update these metadata values per report to keep headers and the cover page in sync.
+\SetLabReportHeader{[Report Name or Number]}
+\SetLabReportCoverTitle{Type Your Title Here:}
+\SetLabReportCoverSubtitle{Concise and Informative Subtitle}
+\SetLabReportPartners{[Lab Partners]}
+\SetLabReportPreparedOn{\today}
+
+\LabReportDocumentBegin
+
+\MakeLabReportCoverPage
+% Document body continues through Sections below.
+
+% ==============================
+% Abstract
+% ==============================
+\begin{center}
+\section*{\centering Abstract}
+\begin{adjustwidth}{1.5cm}{1.5cm}
+\textit{[150–250 words summarizing purpose, method, quantitative results (with units), and conclusion. No citations.]}
+\end{adjustwidth}
+\end{center}
+
+% ==============================
+% Introduction
+% ==============================
+\Needspace{3\baselineskip}
+\section*{Introduction}
+[Provide scientific context, relevant theory, and objectives. Use equations like $\Delta T_f = iK_f m$. Cite key references.\cite{ref1}]
+
+% ==============================
+% Experimental
+% ==============================
+\Needspace{3\baselineskip}
+\section*{Experimental}
+[Summarize procedure in paragraph form, past tense. Include chemicals, instruments, and conditions. Enough detail for reproducibility.]
+
+% ==============================
+% Results
+% ==============================
+\Needspace{3\baselineskip}
+\section*{Results}
+[Present data clearly with tables and figures. Units in headers. Include one sample calculation. Summarize results concisely.]
+
+% --- Example Table ---
+\begin{table}[h]
+\centering
+\caption{Measured freezing points of solutions}
+\begin{tabular}{lcc}
+\hline
+Solution & Concentration (mol/kg) & Freezing Point (°C) \\
+\hline
+NaCl     & 0.50                   & -1.85 \\
+NaCl     & 1.00                   & -3.72 \\
+Urea     & 1.00                   & -1.86 \\
+\hline
+\end{tabular}
+\end{table}
+
+% --- Example TikZ Diagram ---
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[scale=1]
+\draw[thick,->] (0,0) -- (5,0) node[right] {x-axis};
+\draw[thick,->] (0,0) -- (0,4) node[above] {y-axis};
+\draw[thick] (0,0) -- (4,3) node[midway, above] {Sample line};
+\end{tikzpicture}
+\caption{Simple diagram drawn with TikZ.}
+\end{figure}
+
+% --- Example PGFPlot (Styled) ---
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    width=0.75\textwidth,
+    xmin=0, xmax=1.9,
+    ymin=0, ymax=6.2,
+    xlabel={Molality (mol/kg)},
+    ylabel={$\Delta T_f$ (°C)},
+    tick align=outside,
+    grid=both,
+    grid style={line width=.3pt, draw=gray!25},
+    major grid style={line width=.5pt, draw=gray!50},
+    minor grid style={line width=.2pt, draw=gray!15},
+    legend style={draw=black, fill=white, font=\small, fill opacity=0.8},
+    legend cell align={left},
+    legend pos=south east
+]
+\addplot[
+    only marks,
+    mark=*,
+    mark size=3pt,
+    draw=\LabReportSecondaryColor,
+    fill=\LabReportSecondaryColor!60!white
+] coordinates {
+    (0.5,1.85) (1.0,3.72) (1.5,5.60)
+};
+\addlegendentry{Data}
+\addplot[thick, domain=0:1.9, draw=\LabReportPrimaryColor] {3.53*x};
+\addlegendentry{Best Linear Fit Line}
+\end{axis}
+\end{tikzpicture}
+\caption{Freezing‐point depression versus molality with best‐fit line.}
+\end{figure}
+
+% ==============================
+% Discussion
+% ==============================
+\Needspace{3\baselineskip}
+\section*{Discussion}
+[Interpret data. Compare with literature. Discuss sources of error. Connect back to theory and objectives.]
+
+As shown in Figure~\ref{fig:titration-curve}, the pH rises sharply near the equivalence point, consistent with the expected titration behavior.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    width=0.75\textwidth,
+    height=6cm,
+    xmin=0, xmax=25,
+    ymin=2, ymax=12,
+    xlabel={Volume of Titrant (mL)},
+    ylabel={pH},
+    tick align=outside,
+    grid=both,
+    grid style={line width=.3pt, draw=gray!25},
+    major grid style={line width=.5pt, draw=gray!50},
+    minor grid style={line width=.2pt, draw=gray!15},
+    grid style={line width=.3pt, draw=gray!25},
+    major grid style={line width=.5pt, draw=gray!50},
+    clip=false,
+    legend style={at={(1.04,0.5)}, anchor=west, draw=black, fill=white, font=\small, fill opacity=0.9, align=left},
+    legend cell align={left},
+    samples=200,
+    domain=0:25
+]
+% Sigmoidal titration curve with sharp transition near 12.5 mL
+\addplot[thick, draw=\LabReportPrimaryColor] (
+    x,
+    {2 + 10/(1 + exp(-0.154*(x - 12.5)))}
+);
+\addlegendentry{Titration Curve}
+
+% Equivalence point vertical dashed line
+\draw[thick, dashed, color=\LabReportSecondaryColor] (axis cs:12.5,2) -- (axis cs:12.5,12);
+\addlegendimage{thick, dashed, color=\LabReportSecondaryColor}
+\addlegendentry{Equivalence Point}
+
+% Buffer region vertical dashed lines and shaded area
+\draw[thick, dashed, color=\LabReportPrimaryColor!50] (axis cs:2.5,2) -- (axis cs:2.5,12);
+\draw[thick, dashed, color=\LabReportPrimaryColor!50] (axis cs:10,2) -- (axis cs:10,12);
+\addlegendimage{thick, dashed, color=\LabReportPrimaryColor!50}
+\addlegendentry{Buffer Region}
+\addplot [ name path=bufferbottom, domain=2.5:10, draw=none, forget plot ] { 2 };
+\addplot [ name path=buffertop, domain=2.5:10, draw=none, forget plot ] { 12 };
+\addplot [ fill=\LabReportPrimaryColor, fill opacity=0.15, forget plot ] fill between [ of=bufferbottom and buffertop ];
+
+% pKa horizontal line, marker, and label
+% 1. Plot the horizontal line
+\addplot [ thick, dashed, color=\LabReportAccentColor, domain=0:25 ] { 4.76 };
+% 2. Add the legend entry for the line above
+\addlegendentry { $ pK_a $ }
+
+% 3. Plot the marker (dot) at half-equivalence
+% We add 'forget plot' so it doesn't get its own legend entry
+\addplot [ 
+  only marks, 
+  mark=*,
+  mark size= 2.3pt ,
+  draw= \LabReportAccentColor ,
+  fill= \LabReportAccentColor,
+  forget plot
+] coordinates { (6.25,4.76) } ;
+
+% Labels removed to avoid clutter
+%\node[anchor=south west, color=\LabReportSecondaryColor, font=\small] at (axis cs:12.5,12) {Equivalence Point};
+%\node[anchor=south west, color=\LabReportPrimaryColor!50, font=\small] at (axis cs:2.5,12) {Buffer Region};
+%\node[anchor=south west, color=\LabReportPrimaryColor!50, font=\small] at (axis cs:10,12) {Buffer Region};
+\node[anchor=north east, color=\LabReportAccentColor, font=\small] at (axis cs:25,4.76) {$pK_a$};
+\end{axis}
+\end{tikzpicture}
+\caption{Example titration curve with key regions highlighted.}
+\label{fig:titration-curve}
+\end{figure}
+
+% ==============================
+% Conclusion
+% ==============================
+\Needspace{3\baselineskip}
+\section*{Conclusion}
+[Summarize findings concisely. Confirm whether objectives were achieved. No new data.]
+
+% ==============================
+% References
+% ==============================
+\newpage
+\Needspace{3\baselineskip}
+\begin{thebibliography}{9}
+\bibitem{ref1} Author, A. B.; Author, C. D. \textit{Journal Name} \textbf{Year}, \textit{Volume}, page–page.  
+\bibitem{ref2} Author, E. F. \textit{Book Title}; Publisher: Place, Year.  
+\bibitem{ref3} Author, G. H. Title of Webpage. URL (accessed Sept 29, 2025).
+\end{thebibliography}
+
+\LabReportDocumentEnd

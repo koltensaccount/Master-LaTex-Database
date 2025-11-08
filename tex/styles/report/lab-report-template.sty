@@ -1,0 +1,237 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{lab-report-template}[2025/02/15 Course-agnostic styling for technical lab reports]
+
+\makeatletter
+\@ifundefined{ifLabReportEmbedded}{\newif\ifLabReportEmbedded \LabReportEmbeddedfalse}{}
+\makeatother
+
+% ==============================
+% Page Layout
+% ==============================
+\newcommand{\LabReportGeometrySpec}{top=1.5cm,bottom=3.5cm,left=2cm,right=2cm}
+\makeatletter
+\@ifpackageloaded{geometry}{}{%
+  \expandafter\RequirePackage\expandafter[\LabReportGeometrySpec]{geometry}%
+}
+\@ifpackageloaded{url}{}{%
+  \RequirePackage[hyphens]{url}%
+}
+\@ifpackageloaded{hyperref}{}{%
+  \RequirePackage[hidelinks]{hyperref}%
+}
+\makeatother
+\RequirePackage{changepage}
+\RequirePackage{needspace}
+\RequirePackage{indentfirst}
+\Urlmuskip=0mu plus 1mu
+\urlstyle{same}
+
+% ==============================
+% Fonts, Spacing, and Formatting
+% ==============================
+\RequirePackage{setspace}
+\newcommand{\LabReportApplySpacing}{%
+  \setstretch{1.25}%
+  \setlength{\parindent}{2em}%
+  \setlength{\parskip}{0.4em}%
+}
+\RequirePackage{verbatim}
+
+\RequirePackage{titlesec}
+\titlespacing*{\section}{0pt}{0.6em}{0.4em}
+\titlespacing*{\subsection}{0pt}{0.4em}{0.3em}
+
+% ==============================
+% Mathematics
+% ==============================
+\RequirePackage{amsmath, amsthm, amsfonts, amssymb, amscd}
+
+% ==============================
+% Figures, Captions, and Colors
+% ==============================
+\RequirePackage{graphicx}
+\RequirePackage[labelfont=bf]{caption}
+\RequirePackage{xcolor}
+\RequirePackage{xparse}
+
+% Palette infrastructure: semantic color names with configurable hex values.
+\makeatletter
+\newcommand{\LabReportRedefineColor}[3]{%
+    \expandafter\let\csname color@#1\endcsname\relax
+    \definecolor{#1}{#2}{#3}%
+}
+\makeatother
+
+\newcommand{\LabReportPrimaryColor}{LabReportPrimary}
+\newcommand{\LabReportSecondaryColor}{LabReportSecondary}
+\newcommand{\LabReportAccentColor}{LabReportAccent}
+\newcommand{\LabReportNeutralColor}{LabReportNeutral}
+\newcommand{\LabReportMutedColor}{LabReportMuted}
+
+% Palette setters (call from preamble to recolor the theme).
+% Primary      → Headings, figure strokes, emphasis rules.
+% Secondary    → Data accents, callouts, markers.
+% Accent       → Critical annotations (e.g., pKa line).
+% Neutral      → Title text, body emphasis.
+% Muted        → Background panels or soft fills.
+\NewDocumentCommand{\SetLabReportPrimaryColor}{m}{%
+    \LabReportRedefineColor{\LabReportPrimaryColor}{HTML}{#1}%
+    \colorlet{azul}{\LabReportPrimaryColor}%
+}
+\NewDocumentCommand{\SetLabReportSecondaryColor}{m}{%
+    \LabReportRedefineColor{\LabReportSecondaryColor}{HTML}{#1}%
+    \colorlet{utorange}{\LabReportSecondaryColor}%
+}
+\NewDocumentCommand{\SetLabReportAccentColor}{m}{%
+    \LabReportRedefineColor{\LabReportAccentColor}{HTML}{#1}%
+    \colorlet{cornellred}{\LabReportAccentColor}%
+}
+\NewDocumentCommand{\SetLabReportNeutralColor}{m}{%
+    \LabReportRedefineColor{\LabReportNeutralColor}{HTML}{#1}%
+    \colorlet{night}{\LabReportNeutralColor}%
+}
+\NewDocumentCommand{\SetLabReportMutedColor}{m}{%
+    \LabReportRedefineColor{\LabReportMutedColor}{HTML}{#1}%
+    \colorlet{whitesmoke}{\LabReportMutedColor}%
+}
+
+\newcommand{\LabReportSetPalette}[5]{%
+    \SetLabReportPrimaryColor{#1}%
+    \SetLabReportSecondaryColor{#2}%
+    \SetLabReportAccentColor{#3}%
+    \SetLabReportNeutralColor{#4}%
+    \SetLabReportMutedColor{#5}%
+}
+
+% Convenience palettes for quick swapping.
+\NewDocumentCommand{\LabReportUsePaletteDefault}{}{%
+    \LabReportSetPalette{016FB9}{FF8811}{BA1B1D}{171614}{F7F4F3}%
+}
+\NewDocumentCommand{\LabReportUsePaletteCoolTwilight}{}{%
+    \LabReportSetPalette{335C81}{FCA311}{E24636}{1F1F24}{F1F5F9}%
+}
+\NewDocumentCommand{\LabReportUsePaletteForestGold}{}{%
+    \LabReportSetPalette{2C6E49}{F0A202}{D62828}{1A1A1A}{F5F1E3}%
+}
+\NewDocumentCommand{\LabReportUsePaletteSolarPastel}{}{%
+    \LabReportSetPalette{1E3D59}{F5CB5C}{E36BAE}{F2EFEA}{FAFAF5}%
+}
+\NewDocumentCommand{\LabReportUsePaletteMidnightNeon}{}{%
+    \LabReportSetPalette{0F172A}{38BDF8}{A855F7}{E2E8F0}{1F2937}%
+}
+\NewDocumentCommand{\LabReportUsePaletteVintageRose}{}{%
+    \LabReportSetPalette{7A3E48}{D6A184}{F2B8A0}{2F2F2F}{F7F2ED}%
+}
+
+% Apply the default palette at package load; user code can override afterward.
+\LabReportUsePaletteDefault
+
+% ==============================
+% TikZ / PGFPlots
+% ==============================
+\RequirePackage{tikz}
+\RequirePackage{pgfplots}
+\usepgfplotslibrary{fillbetween}
+\usetikzlibrary{intersections}
+\pgfplotsset{compat=1.18}
+
+% ==============================
+% Miscellaneous
+% ==============================
+\RequirePackage{fancyhdr}
+\RequirePackage[superscript]{cite}
+\setlength{\headheight}{15pt}
+\headsep 2.5em
+
+% Utility macros
+\newcommand{\degree}{\ensuremath{^\circ}}
+
+% ==============================
+% Report Metadata Helpers
+% ==============================
+\newcommand{\LabReportCourse}{[Course]}
+\newcommand{\LabReportHeader}{Lab Report}
+\newcommand{\LabReportAuthor}{[Author]}
+\newcommand{\LabReportInstitution}{[Institution]}
+\newcommand{\LabReportSemester}{[Term]}
+\newcommand{\LabReportPartners}{[Lab Partners]}
+\newcommand{\LabReportCoverTitle}{Type Your Title Here:}
+\newcommand{\LabReportCoverSubtitle}{Concise and Informative Subtitle}
+\newcommand{\LabReportPreparedOn}{\today}
+
+% Metadata setters (call these from your report preamble)
+% \SetLabReportCourse{Course 101}       → Updates the left header tag
+% \SetLabReportHeader{Lab Report 1}     → Updates header center and cover label
+% \SetLabReportAuthor{Your Name}        → Updates header right + cover author line
+% \SetLabReportInstitution{University}  → Updates cover institution line
+% \SetLabReportSemester{Fall 2025}      → Updates cover semester line
+% \SetLabReportPartners{Partner List}   → Updates partner line on cover
+% \SetLabReportCoverTitle{Title Text}   → Main cover title (supports long text)
+% \SetLabReportCoverSubtitle{Subtitle}  → Subtitle line beneath title
+% \SetLabReportPreparedOn{Date string}  → Footer timestamp on cover
+
+\NewDocumentCommand{\SetLabReportCourse}{m}{\renewcommand{\LabReportCourse}{#1}}
+\NewDocumentCommand{\SetLabReportHeader}{m}{\renewcommand{\LabReportHeader}{#1}}
+\NewDocumentCommand{\SetLabReportAuthor}{m}{\renewcommand{\LabReportAuthor}{#1}}
+\NewDocumentCommand{\SetLabReportInstitution}{m}{\renewcommand{\LabReportInstitution}{#1}}
+\NewDocumentCommand{\SetLabReportSemester}{m}{\renewcommand{\LabReportSemester}{#1}}
+\NewDocumentCommand{\SetLabReportPartners}{m}{\renewcommand{\LabReportPartners}{#1}}
+\NewDocumentCommand{\SetLabReportCoverTitle}{m}{\renewcommand{\LabReportCoverTitle}{#1}}
+\NewDocumentCommand{\SetLabReportCoverSubtitle}{m}{\renewcommand{\LabReportCoverSubtitle}{#1}}
+\NewDocumentCommand{\SetLabReportPreparedOn}{m}{\renewcommand{\LabReportPreparedOn}{#1}}
+
+\fancypagestyle{labreport}{
+    \fancyhf{}
+    \fancyhead[L]{\LabReportCourse}
+    \fancyhead[C]{\bfseries\Large \LabReportHeader}
+    \fancyhead[R]{\bfseries Author: \LabReportAuthor}
+    \fancyfoot[R]{\small\thepage}
+}
+\newcommand{\LabReportApplyHeaders}{%
+    \pagestyle{labreport}%
+    \ifLabReportEmbedded\else
+      \fancypagestyle{plain}{%
+          \fancyhf{}%
+          \fancyhead[L]{\LabReportCourse}%
+          \fancyhead[C]{\bfseries\Large \LabReportHeader}%
+          \fancyhead[R]{\bfseries Author: \LabReportAuthor}%
+          \fancyfoot[R]{\small\thepage}%
+      }%
+    \fi
+}
+
+\newcommand{\LabReportActivateLayout}{%
+    \LabReportApplySpacing
+    \LabReportApplyHeaders
+}
+
+\ifLabReportEmbedded\else
+  \AtBeginDocument{\LabReportActivateLayout}
+\fi
+
+% ==============================
+% Shared Cover Page
+% ==============================
+\newcommand{\MakeLabReportCoverPage}{%
+    \thispagestyle{empty}%
+    \begin{center}
+        \vspace*{3.5cm}%
+        \begin{minipage}{0.78\textwidth}
+            \centering
+            {\sffamily\footnotesize\textcolor{\LabReportPrimaryColor!80!black}{\MakeUppercase{\LabReportHeader}}}\\[1em]
+            {\sffamily\bfseries\fontsize{28}{34}\selectfont\textcolor{\LabReportNeutralColor}{\LabReportCoverTitle}}\\[0.9em]
+            {\color{\LabReportPrimaryColor!60!black}\rule{0.38\textwidth}{0.8pt}}\\[0.9em]
+            {\sffamily\Large\textcolor{\LabReportNeutralColor!80}{\LabReportCoverSubtitle}}
+        \end{minipage}\\[2.4cm]
+        \rule{0.6\textwidth}{0.6pt}\\[1.2cm]
+        {\large \textbf{\LabReportAuthor}}\\[0.3cm]
+        {\normalsize \LabReportPartners}\\[1cm]
+        {\large \LabReportCourse}\\[0.3cm]
+        {\normalsize \LabReportInstitution}\\[0.3cm]
+        {\normalsize \textcolor{\LabReportNeutralColor!55!white}{\LabReportSemester}}\\[1.2cm]
+        \rule{0.3\textwidth}{0.4pt}\\[0.5cm]
+        {\small \textcolor{\LabReportNeutralColor!45!white}{Prepared on \LabReportPreparedOn}}
+    \end{center}%
+    \newpage%
+    \setcounter{page}{2}%
+}

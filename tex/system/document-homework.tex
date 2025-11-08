@@ -1,0 +1,58 @@
+% ====================================================
+% Standalone Homework Document Wrapper
+% ----------------------------------------------------
+% Provides a single entry point for printable homework
+% PDFs. Files define any of the macros below before
+% inputting this wrapper. When the same source is
+% embedded inside the textbook, \ifMathHomeworkEmbedded
+% is set by tex/modules/homework-embed.tex and this
+% wrapper skips the standalone document branch.
+% ====================================================
+
+\makeatletter
+\providecommand{\MathHomeworkLocateTexPrefix}{%
+  \def\MathHomeworkTexPrefix{}%
+  \@for\mathhomework@base:=,../,../../,../../../,../../../../,../../../../../\do{%
+    \ifx\MathHomeworkTexPrefix\@empty
+      \IfFileExists{\mathhomework@base tex/core/colors.tex}{%
+        \xdef\MathHomeworkTexPrefix{\mathhomework@base tex/}%
+      }{}%
+    \fi
+  }%
+  \ifx\MathHomeworkTexPrefix\@empty
+    \PackageError{document-homework}{Cannot locate tex/ directory}{Ensure this wrapper is included from within the repository tree or define \string\MathHomeworkTexPrefix\space manually.}%
+  \fi
+}
+\makeatother
+
+\providecommand{\HomeworkDocClass}{article}
+\providecommand{\HomeworkDocOptions}{11pt,letterpaper}
+\providecommand{\HomeworkDocSetup}{}
+
+\providecommand{\HomeworkDocumentBegin}{}
+\providecommand{\HomeworkDocumentEnd}{}
+\providecommand{\HomeworkStandaloneEnd}{}
+
+\makeatletter
+\@ifundefined{ifMathHomeworkEmbedded}{%
+  \newif\ifMathHomeworkEmbedded
+  \MathHomeworkEmbeddedfalse
+}{}
+\makeatother
+
+\ifMathHomeworkEmbedded
+  \renewcommand{\HomeworkDocumentBegin}{}
+  \renewcommand{\HomeworkDocumentEnd}{}
+  \renewcommand{\HomeworkStandaloneEnd}{}
+  \HomeworkDocSetup
+\else
+  \documentclass[\HomeworkDocOptions]{\HomeworkDocClass}
+  \MathHomeworkLocateTexPrefix
+  \input{\MathHomeworkTexPrefix core/colors.tex}
+  \input{\MathHomeworkTexPrefix core/base.tex}
+  \input{\MathHomeworkTexPrefix styles/homework.tex}
+  \HomeworkDocSetup
+  \renewcommand{\HomeworkDocumentBegin}{\begin{document}}
+  \renewcommand{\HomeworkDocumentEnd}{\end{document}}
+  \renewcommand{\HomeworkStandaloneEnd}{\HomeworkDocumentEnd}
+\fi
