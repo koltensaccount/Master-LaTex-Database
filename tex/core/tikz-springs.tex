@@ -1,0 +1,38 @@
+% ====================================================
+% TikZ helpers for mass-spring diagrams
+% ----------------------------------------------------
+% Shared styles for the diagrams pulled into the course notes.
+% Override the `Primary`/`Highlight` colors via \MathColorOverride
+% before loading `main.tex` to match your palette.
+% ====================================================
+\colorlet{tikzSpringPrimaryColor}{Primary}
+\colorlet{tikzSpringForceColor}{Highlight}
+\newcommand{\tikzSpringAxisColor}{tikzSpringPrimaryColor!80!black}
+\newcommand{\tikzSpringDarkColor}{tikzSpringPrimaryColor!40!black}
+\tikzstyle{mydashed}=[\tikzSpringAxisColor,dashed,line width=0.25,dash pattern=on 2.2pt off 2.2pt]
+\tikzstyle{axis}=[->,thick]
+\tikzstyle{ell}=[{Latex[length=3.3,width=2.2]}-{Latex[length=3.3,width=2.2]},line width=0.3]
+\tikzstyle{dx}=[-{Latex[length=3.3,width=2.2]},\tikzSpringDarkColor,line width=0.3]
+\tikzstyle{ground}=[
+    preaction={fill,top color=black!10,bottom color=black!5,shading angle=20},
+    fill=tikzSpringPrimaryColor!10!white,
+    draw=none,
+    pattern color=black,
+    pattern={
+        Lines[
+            angle=45,            % This is your "north east" direction
+            distance=3pt,        % A good "default" spacing
+            line width=0.5pt     % A good "default" thickness
+        ]
+    }
+]
+\tikzstyle{mass}=[line width=0.6,tikzSpringPrimaryColor!70!black,
+                  fill=tikzSpringPrimaryColor!20!white!80,
+                  rounded corners=1,top color=tikzSpringPrimaryColor!30!white!80,
+                  bottom color=tikzSpringPrimaryColor!10!white!80,shading angle=20, transform shape]
+\tikzstyle{spring}=[line width=0.8,tikzSpringPrimaryColor!30!black,snake=coil,segment amplitude=5,
+                    segment length=5,line cap=round]
+\tikzset{>=latex}
+\tikzstyle{force}=[->,tikzSpringForceColor!80!black,very thick,line cap=round]
+\newcommand{\springtick}[2]{\draw[thick] (#1)++(#2:0.1) --++ (#2-180:0.2)}
+\newcommand{\tick}[2]{\springtick{#1}{#2}}
