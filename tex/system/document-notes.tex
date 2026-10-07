@@ -50,6 +50,7 @@
 \else
   \documentclass[\MathNotesDocOptions]{\MathNotesDocClass}
   \MathNotesLocateTexPrefix
+  \providecommand{\TexRoot}{\MathNotesTexPrefix}
   \makeatletter
   \@ifundefined{c@chapter}{\newcounter{chapter}}{}%
   \makeatother

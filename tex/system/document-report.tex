@@ -46,9 +46,10 @@
 \else
   \documentclass[\LabReportDocOptions]{\LabReportDocClass}
   \LabReportLocateTexPrefix
+  \providecommand{\TexRoot}{\LabReportTexPrefix}
   \input{\LabReportTexPrefix core/colors.tex}
   \input{\LabReportTexPrefix core/base.tex}
-  \usepackage{\LabReportTexPrefix styles/report/lab-report-template}
+  \input{\LabReportTexPrefix styles/report/lab-report-template.sty}
   \LabReportDocSetup
   \renewcommand{\LabReportDocumentBegin}{\begin{document}}
   \renewcommand{\LabReportDocumentEnd}{\end{document}}

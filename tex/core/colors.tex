@@ -10,6 +10,7 @@
 
 % --- Default color specifications (override-friendly) ---
 \usepackage[dvipsnames]{xcolor}
+\PassOptionsToPackage{colorlinks=true}{hyperref}
 
 \providecommand{\MathColorPrimaryModel}{rgb}
 \providecommand{\MathColorPrimarySpec}{0.18,0.24,0.50}
@@ -47,7 +48,6 @@
 % --- Hyperref defaults share the palette; adjust per document as desired ---
 \AtBeginDocument{%
   \hypersetup{%
-    colorlinks=true,
     linkcolor=Primary,
     urlcolor=Primary,
     citecolor=Primary,

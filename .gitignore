@@ -1,0 +1,33 @@
+# macOS
+.DS_Store
+
+# LaTeX build output
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.idx
+*.ilg
+*.ind
+*.lof
+*.log
+*.lot
+*.out
+*.run.xml
+*.synctex.gz
+*.toc
+*.xdv
+*.pdf
+
+# latexmk per-file output directories
+projects/homework/*/
+projects/discussion/*/
+projects/lecture/*/
+projects/reports/*/
+projects/textbook/src/main/
+projects/textbook/output/
+
+# Keep placeholders if a future empty output directory is intentional
+!.gitkeep

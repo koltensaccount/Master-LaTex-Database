@@ -25,7 +25,6 @@
 \usepackage{caption}
 \usepackage{lipsum}
 \usepackage{tocloft}
-\usepackage{tocloft}
 
 \makeatletter
 \@ifundefined{ifMathNotesEmbedded}{\newif\ifMathNotesEmbedded}{}
@@ -204,6 +203,10 @@
 \newcounter{intaketheorem}
 \newcounter{intakeexample}
 \newcounter{intakesection}
+\renewcommand{\theHintakedefinition}{\thechapter.\arabic{intakedefinition}}
+\renewcommand{\theHintaketheorem}{\thechapter.\arabic{intaketheorem}}
+\renewcommand{\theHintakeexample}{\thechapter.\arabic{intakeexample}}
+\renewcommand{\theHintakesection}{\thechapter.\arabic{intakesection}}
 \crefname{intakedefinition}{Definition}{Definitions}
 \Crefname{intakedefinition}{Definition}{Definitions}
 \crefname{intaketheorem}{Theorem}{Theorems}
@@ -369,6 +372,7 @@
   \mathnotes@closeintake
   \NotesSlugSet{\mathnotes@titleslug}{#1}%
   \def\mathnotes@lectureheading{#2\ \textemdash\ #1}%
+  \phantomsection
   \ifMathNotesEmbedded
     \section*{\mathnotes@lectureheading}%
     \addcontentsline{toc}{section}{Lecture\ #2\ ---\ #1}%
@@ -376,7 +380,6 @@
     \section{\mathnotes@lectureheading}%
   \fi
   \markboth{\mathnotes@lectureheading}{\mathnotes@lectureheading}%
-  \phantomsection
   \label{lec:#2-\mathnotes@titleslug}%
   \mathnotes@resetintakecounters
 }
@@ -386,6 +389,7 @@
   \NotesSlugSet{\mathnotes@packslug}{#1}%
   \NotesSlugSet{\mathnotes@sheetslug}{#2}%
   \def\mathnotes@discussionheading{Discussion\ #1\ ---\ #2\ (#3)}%
+  \phantomsection
   \ifMathNotesEmbedded
     \section*{\mathnotes@discussionheading}%
     \addcontentsline{toc}{section}{Discussion\ #1\ ---\ #2\ (#3)}%
@@ -393,7 +397,6 @@
     \section{\mathnotes@discussionheading}%
   \fi
   \markboth{\mathnotes@discussionheading}{\mathnotes@discussionheading}%
-  \phantomsection
   \label{disc:\mathnotes@packslug-\mathnotes@sheetslug-#3}%
   \mathnotes@resetintakecounters
 }
